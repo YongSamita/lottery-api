@@ -1,6 +1,29 @@
 from flask import Flask, request, jsonify
 from itertools import combinations, permutations
+from pymongo import MongoClient
 app = Flask(__name__)
+
+
+# รับinput
+@app.route('/api/data', methods=['POST'])
+def receive_data():
+    data = request.get_json()
+
+    id = data['id']
+    customerID = data['customerID']
+    customerName = data['customerName']
+    lottery = data['lottery']
+    top = data['top']
+    tod = data['tod']
+    buttom = data['buttom']
+    type = data['type']
+    createBy = data['createBy']
+    createAt = data['createAt']
+
+    # ทำงานต่อไปที่นี่
+
+    response = {'status': 'success'}
+    return jsonify(response)
 
 
 # ลอยแพ
