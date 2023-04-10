@@ -4,26 +4,58 @@ from pymongo import MongoClient
 app = Flask(__name__)
 
 
+# กำหนดค่าเชื่อมต่อ database MongoDB
+client = MongoClient('mongodb://localhost:27017/')
+db = client['mydatabase']
+collection = db['mycollection']
+
+
 # รับinput
 @app.route('/api/data', methods=['POST'])
 def receive_data():
     data = request.get_json()
-
-    id = data['id']
-    customerID = data['customerID']
-    customerName = data['customerName']
-    lottery = data['lottery']
-    top = data['top']
-    tod = data['tod']
-    buttom = data['buttom']
-    type = data['type']
-    createBy = data['createBy']
-    createAt = data['createAt']
-
-    # ทำงานต่อไปที่นี่
-
+    # insert data เข้า collection
+    collection.insert_many(data)
     response = {'status': 'success'}
     return jsonify(response)
+
+
+@app.route('/api/lottery/total', methods=['GET'])
+def get_lottery_total():
+    pipeline = [
+        {
+            # กำหนดเงื่อนไขการ query ใน collection
+            '$match': {}
+        },
+        {
+            # กำหนดเงื่อนไขการ groupby ด้วย lottery
+            '$group': {
+                '_id': '$lottery',
+                'top': {'$sum': '$top'},
+                'tod': {'$sum': '$tod'},
+                'buttom': {'$sum': '$buttom'},
+            }
+        },
+        {
+            # กำหนดชื่อ column ใหม่สำหรับตัวแปร _id
+            '$project': {
+                'lottery': '$_id',
+                '_id': 0,
+                'top': 1,
+                'tod': 1,
+                'buttom': 1,
+            }
+        }
+    ]
+
+    result = collection.aggregate(pipeline)
+
+    # นำผลลัพธ์มาเก็บใน list ของ dict
+    output = []
+    for doc in result:
+        output.append(doc)
+
+    return jsonify(output)
 
 
 # ลอยแพ
