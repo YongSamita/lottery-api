@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # กำหนดค่าเชื่อมต่อ database MongoDB
 client = MongoClient(
-    'mongodb+srv://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
+    'mongodb://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
 db = client['lotto']
 lotteryDB = db['lottery']
 
