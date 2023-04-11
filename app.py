@@ -12,7 +12,7 @@ lotteryDB = db['lottery']
 
 
 # รับinput
-@app.route('/api/data', methods=['POST'])
+@app.route('/api/create-lottery', methods=['POST'])
 def receive_data():
     data = request.get_json()
     # insert data เข้า collection
