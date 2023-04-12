@@ -5,17 +5,18 @@ app = Flask(__name__)
 
 
 # กำหนดค่าเชื่อมต่อ database MongoDB
-client = MongoClient('mongodb://localhost:27017/')
-db = client['mydatabase']
-collection = db['mycollection']
+client = MongoClient(
+    'mongodb://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
+db = client['lotto']
+lotteryDB = db['lottery']
 
 
 # รับinput
-@app.route('/api/data', methods=['POST'])
+@app.route('/api/create-lottery', methods=['POST'])
 def receive_data():
     data = request.get_json()
     # insert data เข้า collection
-    collection.insert_many(data)
+    lotteryDB.insert_many(data)
     response = {'status': 'success'}
     return jsonify(response)
 
@@ -48,7 +49,7 @@ def get_lottery_total():
         }
     ]
 
-    result = collection.aggregate(pipeline)
+    result = lotteryDB.aggregate(pipeline)
 
     # นำผลลัพธ์มาเก็บใน list ของ dict
     output = []
