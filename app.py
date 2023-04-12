@@ -49,12 +49,12 @@ def get_lottery():
     try:
         req = request.args.get('createdBy')
         print('/api/get-lottery req:', req)
-        projection = {'buttom': 1, 'customerID': 1,
+        projection = {'buttom': 1,
                       'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
         result = list(lotteryDB.find({"createdBy": req}, projection).sort(
             'createdAt', pymongo.ASCENDING))
         for document in result:
-            document['_id'] = str(document['_id'])
+            document['id'] = str(document['_id'])
         resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
