@@ -15,7 +15,6 @@ def handleCreateThreeSixSwitch(data):
     unique_list_set.sort()
     result_list = [''.join(str(i) for i in tpl) for tpl in unique_list_set]
     for item in result_list:
-
         if len(result_list) == 6:
             json_list.append({
                 "customerName": data['customerName'],
@@ -25,7 +24,7 @@ def handleCreateThreeSixSwitch(data):
                 "tod": data['tod'],
                 "buttom": data['buttom'],
                 "type": "6 กลับ",
-                "createdBy": request.remote_addr,
+                "createdBy": data['createdBy'],
                 "createdAt": datetime.datetime.now()
             })
         else:
@@ -37,7 +36,7 @@ def handleCreateThreeSixSwitch(data):
                 "tod": data['tod'],
                 "buttom": data['buttom'],
                 "type": "3 กลับ",
-                "createdBy": request.remote_addr,
+                "createdBy": data['createdBy'],
                 "createdAt": datetime.datetime.now()
             })
     return json_list
@@ -64,7 +63,7 @@ def handleCreateNineteen(data):
             "tod": data['tod'],
             "buttom": data['buttom'],
             "type": "19 ประตู",
-            "createdBy": request.remote_addr,
+            "createdBy": data['createdBy'],
             "createdAt": datetime.datetime.now()
         })
 
@@ -88,7 +87,7 @@ def handleCreateCupleTod(data):
             "tod": int(round(data['tod'] / 10)),
             "buttom": data['buttom'],
             "type": "คู่โต๊ด",
-            "createdBy": request.remote_addr,
+            "createdBy": data['createdBy'],
             "createdAt": datetime.datetime.now()
         })
     return json_list
@@ -114,7 +113,7 @@ def handleCreateLoyPae(data):
             "tod": int(round(data['tod'] / len(result_list))),
             "buttom": data['buttom'],
             "type": "ลอยแพ",
-            "createdBy": request.remote_addr,
+            "createdBy": data['createdBy'],
             "createdAt": datetime.datetime.now()
         })
     return json_list
@@ -139,11 +138,11 @@ def handleCreateYums(data):
             "customerName": data['customerName'],
             "customerID": data['customerID'],
             "lottery": item,
-            "top": data['top'],
-            "tod": int(round(data['tod'] / len(result_list))),
+            "top": int(round(data['top'] / len(result_list))),
+            "tod": data['tod'],
             "buttom": data['buttom'],
             "type": "ยำ",
-            "createdBy": request.remote_addr,
+            "createdBy": data['createdBy'],
             "createdAt": datetime.datetime.now()
         })
     return json_list

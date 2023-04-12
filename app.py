@@ -1,13 +1,15 @@
-
-from flask import Flask, request, jsonify
+import datetime
+import json
+from flask import Flask, request, jsonify, Response
 from itertools import combinations, permutations
 from pymongo import MongoClient
+import pymongo
 from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
+from bson import ObjectId
 
 app = Flask(__name__)
 
 
-# กำหนดค่าเชื่อมต่อ database MongoDB
 client = MongoClient(
     'mongodb+srv://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
 db = client['lotto']
@@ -15,23 +17,58 @@ lotteryDB = db['lottery']
 
 
 @app.route('/api/create-lottery', methods=['POST'])
-def receive_data():
-    req = request.get_json()
-    result = []
-    if req['type'] == '3 กลับ':
-        result = handleCreateThreeSixSwitch(req)
-    elif req['type'] == '19 ประตู':
-        result = handleCreateNineteen(req)
-    elif req['type'] == 'คู่โต๊ด':
-        result = handleCreateCupleTod(req)
-    elif req['type'] == 'ลอยแพ':
-        result = handleCreateLoyPae(req)
-    elif req['type'] == 'ยำ':
-        result = handleCreateYums(req)
+def create_lottery():
+    try:
+        req = request.get_json()
+        result = []
+        if req['type'] == '3 กลับ':
+            result = handleCreateThreeSixSwitch(req)
+        elif req['type'] == '19 ประตู':
+            result = handleCreateNineteen(req)
+        elif req['type'] == 'คู่โต๊ด':
+            result = handleCreateCupleTod(req)
+        elif req['type'] == 'ลอยแพ':
+            result = handleCreateLoyPae(req)
+        elif req['type'] == 'ยำ':
+            result = handleCreateYums(req)
+        else:
+            result.append(req)
+        lotteryDB.insert_many(result)
+        resp = jsonify({"data": 'create success', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
 
-    lotteryDB.insert_many(result)
-    response = {'status': 'success'}
-    return jsonify(response)
+
+@app.route('/api/get-lottery', methods=['GET'])
+def get_lottery():
+    try:
+        req = request.args.get('createdBy')
+        projection = {'buttom': 1, 'customerID': 1,
+                      'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
+        result = list(lotteryDB.find({"createdBy": req}, projection).sort(
+            'createdAt', pymongo.ASCENDING))
+        for document in result:
+            document['_id'] = str(document['_id'])
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/delete-lottery', methods=['POST'])
+def delete_lottery():
+    try:
+        req = request.get_json()
+        for item in req['id']:
+            lotteryDB.delete_one({'_id': ObjectId(item)})
+        resp = jsonify({"data": 'delete success', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
 
 
 @ app.route('/api/lottery/total', methods=['GET'])
