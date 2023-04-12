@@ -62,8 +62,6 @@ def get_lottery_total():
 @app.route('/combinations', methods=['POST'])
 def get_combinations():
     data = request.get_json()['name']
-    if len(data) != 5:
-        return jsonify({'error': 'Invalid number of parameters.'}), 400
     result = list(combinations(data, 3))
     result = set(result)
     unique_result = list(set(result))  # select only unique values
@@ -75,8 +73,6 @@ def get_combinations():
 @app.route('/api/permutations', methods=['POST'])
 def get_permutations():
     data = request.get_json()['name']
-    if len(data) != 5:
-        return jsonify({'error': 'Invalid number of parameters.'}), 400
     result = []
     for perm in permutations(data, 3):
         swapped_perm = (perm[2], perm[1], perm[0])
