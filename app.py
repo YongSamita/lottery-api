@@ -6,9 +6,11 @@ from pymongo import MongoClient
 import pymongo
 from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
 from bson import ObjectId
+from flask_cors import CORS
+
 
 app = Flask(__name__)
-
+CORS(app)
 
 client = MongoClient(
     'mongodb+srv://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
