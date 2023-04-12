@@ -1,27 +1,43 @@
+import uuid
 from flask import Flask, request, jsonify
 from itertools import combinations, permutations
 from pymongo import MongoClient
+from util.lottery import handleCreateNineteen, handleCreateThreeSixSwitch
+
 app = Flask(__name__)
 
 
 # กำหนดค่าเชื่อมต่อ database MongoDB
 client = MongoClient(
-    'mongodb://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
+    'mongodb+srv://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
 db = client['lotto']
 lotteryDB = db['lottery']
 
 
-# รับinput
 @app.route('/api/create-lottery', methods=['POST'])
 def receive_data():
-    data = request.get_json()
-    # insert data เข้า collection
-    lotteryDB.insert_many(data)
+    req = request.get_json()
+    result = []
+    if req['type'] == '3 กลับ':
+        result = handleCreateThreeSixSwitch(req)
+    elif req['type'] == '19 ประตู':
+
+        result = handleCreateNineteen(req)
+
+    # elif req['type'] == 'คู่โต๊ด':
+
+    # elif req['type'] == 'ลอยแพ':
+
+    # elif req['type'] == 'ยำ':
+
+        # insert data เข้า collection
+    print(result)
+    lotteryDB.insert_many(result)
     response = {'status': 'success'}
     return jsonify(response)
 
 
-@app.route('/api/lottery/total', methods=['GET'])
+@ app.route('/api/lottery/total', methods=['GET'])
 def get_lottery_total():
     pipeline = [
         {
@@ -59,8 +75,14 @@ def get_lottery_total():
     return jsonify(output)
 
 
+@ app.route('/api/lottery/deleteAll', methods=['POST'])
+def deleteAll():
+    lotteryDB.delete_many({})
+    return jsonify({"status": "success"})
+
+
 # ลอยแพ
-@app.route('/combinations', methods=['POST'])
+@ app.route('/combinations', methods=['POST'])
 def get_combinations():
     data = request.get_json()['name']
     result = list(combinations(data, 3))
@@ -71,7 +93,7 @@ def get_combinations():
 
 
 # ยำ(มั้ง)
-@app.route('/api/permutations', methods=['POST'])
+@ app.route('/api/permutations', methods=['POST'])
 def get_permutations():
     data = request.get_json()['name']
     result = []
@@ -85,7 +107,7 @@ def get_permutations():
 
 
 # 19ประตู
-@app.route('/api/get_two_digits', methods=['POST'])
+@ app.route('/api/get_two_digits', methods=['POST'])
 def get_two_digits():
     data = request.get_json()['name']
     print(data)
@@ -102,7 +124,7 @@ def get_two_digits():
 
 
 # 3กลับ/6กลับ
-@app.route('/permute', methods=['POST'])
+@ app.route('/permute', methods=['POST'])
 def get_permute():
     data = request.get_json()['name']
     result = []
@@ -116,7 +138,7 @@ def get_permute():
 
 
 # คู่โต๊ด
-@app.route('/api/get_three_digits', methods=['POST'])
+@ app.route('/api/get_three_digits', methods=['POST'])
 def get_three_digits():
     data = request.get_json()['name']
     print(data)
