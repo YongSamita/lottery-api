@@ -22,6 +22,7 @@ lotteryDB = db['lottery']
 def create_lottery():
     try:
         req = request.get_json()
+        print('/api/create-lottery req:', req)
         result = []
         if req['type'] == '3 กลับ':
             result = handleCreateThreeSixSwitch(req)
@@ -47,6 +48,7 @@ def create_lottery():
 def get_lottery():
     try:
         req = request.args.get('createdBy')
+        print('/api/get-lottery req:', req)
         projection = {'buttom': 1, 'customerID': 1,
                       'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
         result = list(lotteryDB.find({"createdBy": req}, projection).sort(
@@ -64,6 +66,7 @@ def get_lottery():
 def delete_lottery():
     try:
         req = request.get_json()
+        print('/api/delete-lottery req:', req)
         for item in req['id']:
             lotteryDB.delete_one({'_id': ObjectId(item)})
         resp = jsonify({"data": 'delete success', "status": 200})
