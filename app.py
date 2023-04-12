@@ -1,8 +1,8 @@
-import uuid
+
 from flask import Flask, request, jsonify
 from itertools import combinations, permutations
 from pymongo import MongoClient
-from util.lottery import handleCreateNineteen, handleCreateThreeSixSwitch
+from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
 
 app = Flask(__name__)
 
@@ -21,17 +21,14 @@ def receive_data():
     if req['type'] == '3 กลับ':
         result = handleCreateThreeSixSwitch(req)
     elif req['type'] == '19 ประตู':
-
         result = handleCreateNineteen(req)
+    elif req['type'] == 'คู่โต๊ด':
+        result = handleCreateCupleTod(req)
+    elif req['type'] == 'ลอยแพ':
+        result = handleCreateLoyPae(req)
+    elif req['type'] == 'ยำ':
+        result = handleCreateYums(req)
 
-    # elif req['type'] == 'คู่โต๊ด':
-
-    # elif req['type'] == 'ลอยแพ':
-
-    # elif req['type'] == 'ยำ':
-
-        # insert data เข้า collection
-    print(result)
     lotteryDB.insert_many(result)
     response = {'status': 'success'}
     return jsonify(response)
