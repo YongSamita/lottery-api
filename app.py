@@ -35,6 +35,7 @@ def create_lottery():
         elif req['type'] == 'ยำ':
             result = handleCreateYums(req)
         else:
+            req['createdAt'] = datetime.datetime.now()
             result.append(req)
         lotteryDB.insert_many(result)
         for document in result:
