@@ -37,7 +37,11 @@ def create_lottery():
         else:
             result.append(req)
         lotteryDB.insert_many(result)
-        resp = jsonify({"data": 'create success', "status": 200})
+        for document in result:
+            document['createdAt'] = document['createdAt'].strftime(
+                '%Y-%m-%d %H:%M:%S.%f')
+            del document['_id']
+        resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
