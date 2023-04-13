@@ -17,7 +17,7 @@ def handleCreateThreeSixSwitch(data):
     for item in result_list:
         if len(result_list) == 6:
             json_list.append({
-                "id": data['id'],
+
                 "customerName": data['customerName'],
                 "customerID": data['customerID'],
                 "lottery": item,
@@ -30,7 +30,7 @@ def handleCreateThreeSixSwitch(data):
             })
         else:
             json_list.append({
-                "id": data['id'],
+
                 "customerName": data['customerName'],
                 "customerID": data['customerID'],
                 "lottery": item,
@@ -58,7 +58,7 @@ def handleCreateNineteen(data):
     unique_result.sort()
     for item in unique_result:
         json_list.append({
-            "id": data['id'],
+
             "customerName": data['customerName'],
             "customerID": data['customerID'],
             "lottery": item,
@@ -83,7 +83,7 @@ def handleCreateCupleTod(data):
     unique_result.sort()
     for item in unique_result:
         json_list.append({
-            "id": data['id'],
+
             "customerName": data['customerName'],
             "customerID": data['customerID'],
             "lottery": item,
@@ -110,7 +110,7 @@ def handleCreateLoyPae(data):
     result_list = [''.join(str(i) for i in tpl) for tpl in unique_list_set]
     for item in result_list:
         json_list.append({
-            "id": data['id'],
+
             "customerName": data['customerName'],
             "customerID": data['customerID'],
             "lottery": item,
@@ -140,7 +140,7 @@ def handleCreateYums(data):
     result_list = [''.join(str(i) for i in tpl) for tpl in unique_list_set]
     for item in result_list:
         json_list.append({
-            "id": data['id'],
+
             "customerName": data['customerName'],
             "customerID": data['customerID'],
             "lottery": item,
