@@ -91,7 +91,7 @@ def edit_lottery():
         print('/api/edit-lottery req:', req)
         filter = {'_id': ObjectId(req['id'])}
         newvalues = {
-            "$set": {'top': req['top'], 'tod': req['tod'], 'buttom': req['buttom'], 'lottery': req['lottery'], 'type': req['type']}}
+            "$set": {'customerName': req['customerName'], 'top': req['top'], 'tod': req['tod'], 'buttom': req['buttom'], 'lottery': req['lottery'], 'type': req['type']}}
         lotteryDB.update_one(filter, newvalues)
         resp = jsonify({"data": req, "status": 200})
     except Exception as e:
