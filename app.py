@@ -178,6 +178,22 @@ def create_customer():
     return resp
 
 
+@app.route('/api/get-list-customer', methods=['GET'])
+def get_list_customer():
+    try:
+        projection = {'customerID': 1,
+                      'customerName': 1}
+        result = list(customerDB.find({}, projection).sort(
+            'customerID', pymongo.ASCENDING))
+        for document in result:
+            document['_id'] = str(document['_id'])
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
 @ app.route('/api/lottery/total', methods=['GET'])
 def get_lottery_total():
     pipeline = [
