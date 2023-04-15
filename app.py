@@ -84,6 +84,22 @@ def delete_lottery():
     return resp
 
 
+@app.route('/api/edit-lottery', methods=['POST'])
+def edit_lottery():
+    try:
+        req = request.get_json()
+        print('/api/edit-lottery req:', req)
+        filter = {'_id': ObjectId(req['id'])}
+        newvalues = {
+            "$set": {'top': req['top'], 'tod': req['tod'], 'buttom': req['buttom'], 'lottery': req['lottery'], 'type': req['type']}}
+        lotteryDB.update_one(filter, newvalues)
+        resp = jsonify({"data": req, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
 @ app.route('/api/lottery/total', methods=['GET'])
 def get_lottery_total():
     pipeline = [
