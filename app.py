@@ -17,6 +17,8 @@ client = MongoClient(
 db = client['lotto']
 lotteryDB = db['lottery']
 customerDB = db['customer']
+limitDB = db['limit']
+result_lottery_DB = db['result_lottery']
 
 
 @app.route('/api/result-lottery', methods=['GET'])
@@ -233,6 +235,62 @@ def create_customer():
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
     return resp
+
+
+@app.route('/api/create-limit-lottery', methods=['POST'])
+def create_limit_lottery():
+    try:
+        req = request.get_json()
+        result = []
+        print('/api/add-custommer req:', req)
+        data = {}
+        data = {
+            "threetop": req['threetop'],
+            "threetod": req['threetod'],
+            "threebuttom": req['threebuttom'],
+            "twotop": req['twotop'],
+            "twobuttom": req['twobuttom']
+        }
+        result.append(data)
+        insert_result = limitDB.insert_many(result)
+        inserted_ids = [str(id) for id in insert_result.inserted_ids]
+        resp = jsonify({"data": inserted_ids, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/create-result-lottery', methods=['POST'])
+def create_result_lottery():
+    try:
+        req = request.get_json()
+        result = []
+        print('/api/add-custommer req:', req)
+        data = {}
+        data = {
+            "threetop": req['threetop'],
+            "threebuttom_1": req['threebuttom'],
+            "threebuttom_2": req['threebuttom'],
+            "threebuttom_3": req['threebuttom'],
+            "threebuttom_4": req['threebuttom'],
+            "twotop": req['twotop'],
+            "twobuttom": req['twobuttom']
+        }
+        result.append(data)
+        insert_result = result_lottery_DB.insert_many(result)
+        inserted_ids = [str(id) for id in insert_result.inserted_ids]
+        resp = jsonify({"data": inserted_ids, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/create-check-lottery', methods=['POST'])
+def create_check_lottery():
+
+    return
 
 
 @app.route('/api/get-list-customer', methods=['GET'])
