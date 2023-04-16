@@ -235,7 +235,7 @@ def delete_customer():
         req = request.get_json()
         print('/api/delete-customer req:', req)
         for item in req['id']:
-            lotteryDB.delete_one({'_id': ObjectId(item)})
+            customerDB.delete_one({'_id': ObjectId(item)})
         resp = jsonify({"data": 'delete success', "status": 200})
     except Exception as e:
         print("The error is: ", e)
