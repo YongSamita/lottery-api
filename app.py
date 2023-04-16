@@ -84,6 +84,7 @@ def get_lottery():
             'createdAt', pymongo.ASCENDING))
         for document in result:
             document['id'] = str(document['_id'])
+            del document['_id']
         resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
