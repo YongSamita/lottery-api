@@ -220,9 +220,11 @@ def create_customer():
                          'loypae': {'loypaePrice': req['loypaePrice'], 'loypaePercent': req['loypaePercent']},
                          'yum': {'yumPrice': req['yumPrice'], 'yumPercent': req['yumPercent']},
                          }}
-            result.append(data)
-            customerDB.update_one(filter, newvalues)
-            resp = jsonify({"data": result, "status": 200})
+            update_result = customerDB.find_one_and_update(filter, newvalues)
+            update_result['id'] = str(update_result['_id'])
+            del update_result['_id']
+            del update_result['createdAt']
+            resp = jsonify({"data": update_result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
