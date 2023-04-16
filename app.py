@@ -57,9 +57,16 @@ def create_lottery():
         elif req['type'] == 'ยำ':
             result = handleCreateYums(req)
         else:
+            req['createdAt'] = datetime.datetime.now()
             result.append(req)
         lotteryDB.insert_many(result)
-        resp = jsonify({"data": 'create success', "status": 200})
+        for document in result:
+            document['createdAt'] = document['createdAt'].strftime(
+                '%Y-%m-%d %H:%M:%S.%f')
+            document['_id'] = str(document['_id'])
+            document['id'] = str(document['_id'])
+
+        resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
