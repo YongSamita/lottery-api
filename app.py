@@ -136,10 +136,119 @@ def get_lottery_report():
     return jsonify(output)
 
 
+@app.route('/api/edit-lottery', methods=['POST'])
+def edit_lottery():
+    try:
+        req = request.get_json()
+        print('/api/edit-lottery req:', req)
+        filter = {'_id': ObjectId(req['id'])}
+        newvalues = {
+            "$set": {'customerName': req['customerName'], 'top': req['top'], 'tod': req['tod'], 'buttom': req['buttom'], 'lottery': req['lottery'], 'type': req['type']}}
+        lotteryDB.update_one(filter, newvalues)
+        resp = jsonify({"data": req, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
 @ app.route('/api/lottery/deleteAll', methods=['POST'])
 def deleteAll():
     lotteryDB.delete_many({})
     return jsonify({"status": "success"})
+
+
+@app.route('/api/create-customer', methods=['POST'])
+def create_customer():
+    try:
+        req = request.get_json()
+        result = []
+        print('/api/add-custommer req:', req)
+        data = {}
+        data = {
+            "customerName": req['customerName'],
+            "customerID": req['customerID'],
+            "createdBy": req['createdBy'],
+            "createdAt": datetime.datetime.now(),
+            "threeTop": {
+                'threeTopPrice':  req['threeTopPrice'],
+                'threeTopPercent':  req['threeTopPercent']
+            },
+            "threeTod": {
+                'threeTodPrice':  req['threeTodPrice'],
+                'threeTodPercent':  req['threeTodPercent']
+            },
+            "threeButtom": {
+                'threeButtomPrice':  req['threeButtomPrice'],
+                'threeButtomPercent':  req['threeButtomPercent']
+            },
+            "twoTop": {
+                'twoTopPrice':  req['twoTopPrice'],
+                'twoTopPercent':  req['twoTopPercent']
+            },
+            "twoButtom": {
+                'twoButtomPrice':  req['twoButtomPrice'],
+                'twoButtomPercent':  req['twoButtomPercent']
+            },
+            "oneTop": {
+                'oneTopPrice':  req['oneTopPrice'],
+                'oneTopPercent':  req['oneTopPercent']
+            },
+            "oneButtom": {
+                'oneButtomPrice':  req['oneButtomPrice'],
+                'oneButtomPercent':  req['oneButtomPercent']
+            },
+            "coupleTod": {
+                'coupleTodPrice':  req['coupleTodPrice'],
+                'coupleTodPercent':  req['coupleTodPercent']
+            },
+            "loypae": {
+                'loypaePrice':  req['loypaePrice'],
+                'loypaePercent':  req['loypaePercent']
+            },
+            "yum": {
+                'yumPrice':  req['yumPrice'],
+                'yumPercent':  req['yumPercent']
+            },
+        }
+        result.append(data)
+        customerDB.insert_many(result)
+        for document in result:
+            document['_id'] = str(document['_id'])
+            document['id'] = str(document['_id'])
+            del document['coupleTod']
+            del document['loypae']
+            del document['oneButtom']
+            del document['oneTop']
+            del document['threeButtom']
+            del document['threeTod']
+            del document['threeTop']
+            del document['twoButtom']
+            del document['twoTop']
+            del document['yum']
+            del document['createdAt']
+            del document['createdBy']
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-list-customer', methods=['GET'])
+def get_list_customer():
+    try:
+        projection = {'customerID': 1,
+                      'customerName': 1}
+        result = list(customerDB.find({}, projection).sort(
+            'customerID', pymongo.ASCENDING))
+        for document in result:
+            document['_id'] = str(document['_id'])
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
 
 
 # ลอยแพ
