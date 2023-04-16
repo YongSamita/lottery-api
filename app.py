@@ -152,7 +152,6 @@ def create_customer():
         document = list(customerDB.find({"customerID": req['customerID']}))
         data = {}
         data = {
-            "id": req['id'],
             "customerName": req['customerName'],
             "customerID": req['customerID'],
             "createdBy": req['createdBy'],
