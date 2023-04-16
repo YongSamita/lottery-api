@@ -106,46 +106,6 @@ def delete_lottery():
     return resp
 
 
-@ app.route('/api/lottery/report', methods=['GET'])
-def get_lottery_report():
-    pipeline = [
-        {
-            # กำหนดเงื่อนไขการ query ใน collection
-            '$match': {
-                'lottery': {'$exists': True, '$type': 'string', '$expr': {'$eq': [{'$strLenCP': '$lottery'}, 3]}}
-            }
-        },
-        {
-            # กำหนดเงื่อนไขการ groupby ด้วย lottery
-            '$group': {
-                '_id': '$lottery',
-                'top': {'$sum': '$top'},
-                'tod': {'$sum': '$tod'},
-                'buttom': {'$sum': '$buttom'},
-            }
-        },
-        {
-            # กำหนดชื่อ column ใหม่สำหรับตัวแปร _id
-            '$project': {
-                'lottery': '$_id',
-                '_id': 0,
-                'top': 1,
-                'tod': 1,
-                'buttom': 1,
-            }
-        }
-    ]
-
-    result = lotteryDB.aggregate(pipeline)
-
-    # นำผลลัพธ์มาเก็บใน list ของ dict
-    output = []
-    for doc in result:
-        output.append(doc)
-
-    return jsonify(output)
-
-
 @app.route('/api/edit-lottery', methods=['POST'])
 def edit_lottery():
     try:
@@ -162,18 +122,34 @@ def edit_lottery():
     return resp
 
 
-@ app.route('/api/lottery/deleteAll', methods=['POST'])
-def deleteAll():
+@ app.route('/api/delete-lottery-all', methods=['POST'])
+def delete_lottery_all():
     lotteryDB.delete_many({})
     return jsonify({"status": "success"})
 
 
-@app.route('/api/create-customer', methods=['POST'])
+@app.route('/api/get-list-customer', methods=['GET'])
+def get_list_customer():
+    try:
+        result = list(customerDB.find({}).sort(
+            'customerID', pymongo.ASCENDING))
+        for document in result:
+            document['id'] = str(document['_id'])
+            del document['_id']
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/create-upsert-customer', methods=['POST'])
 def create_customer():
     try:
         req = request.get_json()
         result = []
         print('/api/add-custommer req:', req)
+        document = list(customerDB.find({"customerID": req['customerID']}))
         data = {}
         data = {
             "customerName": req['customerName'],
@@ -221,24 +197,46 @@ def create_customer():
                 'yumPercent':  req['yumPercent']
             },
         }
-        result.append(data)
-        customerDB.insert_many(result)
-        for document in result:
-            document['_id'] = str(document['_id'])
-            document['id'] = str(document['_id'])
-            del document['coupleTod']
-            del document['loypae']
-            del document['oneButtom']
-            del document['oneTop']
-            del document['threeButtom']
-            del document['threeTod']
-            del document['threeTop']
-            del document['twoButtom']
-            del document['twoTop']
-            del document['yum']
-            del document['createdAt']
-            del document['createdBy']
-        resp = jsonify({"data": result, "status": 200})
+        if (len(document) == 0):
+            result.append(data)
+            customerDB.insert_many(result)
+            for document in result:
+                document['id'] = str(document['_id'])
+                del document['_id']
+            resp = jsonify({"data": result, "status": 200})
+        else:
+            filter = {}
+            filter = {'customerID': req['customerID']}
+            newvalues = {
+                "$set": {'customerName': req['customerName'], 'customerID': req['customerID'],
+                         'threeTop': {'threeTopPrice': req['threeTopPrice'], 'threeTopPercent': req['threeTopPercent']},
+                         'threeTod': {'threeTodPrice': req['threeTodPrice'], 'threeTodPercent': req['threeTodPercent']},
+                         'threeButtom': {'threeButtomPrice': req['threeButtomPrice'], 'threeButtomPercent': req['threeButtomPercent']},
+                         'twoTop': {'twoTopPrice': req['twoTopPrice'], 'twoTopPercent': req['twoTopPercent']},
+                         'twoButtom': {'twoButtomPrice': req['twoButtomPrice'], 'twoButtomPercent': req['twoButtomPercent']},
+                         'oneTop': {'oneTopPrice': req['oneTopPrice'], 'oneTopPercent': req['oneTopPercent']},
+                         'oneButtom': {'oneButtomPrice': req['oneButtomPrice'], 'oneButtomPercent': req['oneButtomPercent']},
+                         'coupleTod': {'coupleTodPrice': req['coupleTodPrice'], 'coupleTodPercent': req['coupleTodPercent']},
+                         'loypae': {'loypaePrice': req['loypaePrice'], 'loypaePercent': req['loypaePercent']},
+                         'yum': {'yumPrice': req['yumPrice'], 'yumPercent': req['yumPercent']},
+                         }}
+            result.append(data)
+            customerDB.update_one(filter, newvalues)
+            resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/delete-customer', methods=['POST'])
+def delete_customer():
+    try:
+        req = request.get_json()
+        print('/api/delete-customer req:', req)
+        for item in req['id']:
+            lotteryDB.delete_one({'_id': ObjectId(item)})
+        resp = jsonify({"data": 'delete success', "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -269,12 +267,18 @@ def create_limit_lottery():
     return resp
 
 
+@ app.route('/api/customer/deleteAll', methods=['POST'])
+def deleteAll():
+    customerDB.delete_many({})
+    return jsonify({"status": "success"})
+
+
 @app.route('/api/create-result-lottery', methods=['POST'])
 def create_result_lottery():
     try:
         req = request.get_json()
         result = []
-        print('/api/add-custommer req:', req)
+        print('/api/create-result-lottery req:', req)
         data = {}
         data = {
             "threetop": req['threetop'],
@@ -301,20 +305,44 @@ def create_check_lottery():
     return
 
 
-@app.route('/api/get-list-customer', methods=['GET'])
-def get_list_customer():
-    try:
-        projection = {'customerID': 1,
-                      'customerName': 1}
-        result = list(customerDB.find({}, projection).sort(
-            'customerID', pymongo.ASCENDING))
-        for document in result:
-            document['_id'] = str(document['_id'])
-        resp = jsonify({"data": result, "status": 200})
-    except Exception as e:
-        print("The error is: ", e)
-        resp = jsonify({"data": '', "status": 400})
-    return resp
+@ app.route('/api/lottery/report', methods=['GET'])
+def get_lottery_report():
+    pipeline = [
+        {
+            # กำหนดเงื่อนไขการ query ใน collection
+            '$match': {
+                'lottery': {'$exists': True, '$type': 'string', '$expr': {'$eq': [{'$strLenCP': '$lottery'}, 3]}}
+            }
+        },
+        {
+            # กำหนดเงื่อนไขการ groupby ด้วย lottery
+            '$group': {
+                '_id': '$lottery',
+                'top': {'$sum': '$top'},
+                'tod': {'$sum': '$tod'},
+                'buttom': {'$sum': '$buttom'},
+            }
+        },
+        {
+            # กำหนดชื่อ column ใหม่สำหรับตัวแปร _id
+            '$project': {
+                'lottery': '$_id',
+                '_id': 0,
+                'top': 1,
+                'tod': 1,
+                'buttom': 1,
+            }
+        }
+    ]
+
+    result = lotteryDB.aggregate(pipeline)
+
+    # นำผลลัพธ์มาเก็บใน list ของ dict
+    output = []
+    for doc in result:
+        output.append(doc)
+
+    return jsonify(output)
 
 
 # ลอยแพ
