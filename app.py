@@ -101,7 +101,9 @@ def get_lottery_report():
     pipeline = [
         {
             # กำหนดเงื่อนไขการ query ใน collection
-            '$match': {}
+            '$match': {
+                'lottery': {'$exists': True, '$type': 'string', '$expr': {'$eq': [{'$strLenCP': '$lottery'}, 3]}}
+            }
         },
         {
             # กำหนดเงื่อนไขการ groupby ด้วย lottery
