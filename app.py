@@ -242,30 +242,6 @@ def delete_customer():
     return resp
 
 
-@app.route('/api/create-limit-lottery', methods=['POST'])
-def create_limit_lottery():
-    try:
-        req = request.get_json()
-        result = []
-        print('/api/add-custommer req:', req)
-        data = {}
-        data = {
-            "threetop": req['threetop'],
-            "threetod": req['threetod'],
-            "threebuttom": req['threebuttom'],
-            "twotop": req['twotop'],
-            "twobuttom": req['twobuttom']
-        }
-        result.append(data)
-        insert_result = limitDB.insert_many(result)
-        inserted_ids = [str(id) for id in insert_result.inserted_ids]
-        resp = jsonify({"data": inserted_ids, "status": 200})
-    except Exception as e:
-        print("The error is: ", e)
-        resp = jsonify({"data": '', "status": 400})
-    return resp
-
-
 @ app.route('/api/customer/deleteAll', methods=['POST'])
 def deleteAll():
     customerDB.delete_many({})
@@ -292,6 +268,49 @@ def create_result_lottery():
         insert_result = result_lottery_DB.insert_many(result)
         inserted_ids = [str(id) for id in insert_result.inserted_ids]
         resp = jsonify({"data": inserted_ids, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/create-limit-lottery', methods=['POST'])
+def create_limit_lottery():
+    try:
+        req = request.get_json()
+        print('/api/create-limit-lottery req:', req)
+        data = {}
+        data = {
+            "threeTop": req['threeTop'],
+            "threeTod": req['threeTod'],
+            "threeButtom": req['threeButtom'],
+            "twoTop": req['twoTop'],
+            "twoButtom": req['twoButtom']
+        }
+        document = list(limitDB.find({}))
+        if (len(document) > 0):
+            newvalues = {
+                "$set": data
+            }
+            limitDB.update_one(
+                {'_id': ObjectId(document[0]['_id'])}, newvalues)
+        else:
+            limitDB.insert_one(data)
+        resp = jsonify(
+            {"data": 'create upsert limit lottery success', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-limit', methods=['GET'])
+def get_limit():
+    try:
+        result = list(limitDB.find({}))
+        for document in result:
+            del document['_id']
+        resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
