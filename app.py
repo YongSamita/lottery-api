@@ -295,22 +295,41 @@ def get_limit():
 def create_result_lottery():
     try:
         req = request.get_json()
-        result = []
         print('/api/create-result-lottery req:', req)
         data = {}
         data = {
-            "threetop": req['threetop'],
-            "threebuttom_1": req['threebuttom'],
-            "threebuttom_2": req['threebuttom'],
-            "threebuttom_3": req['threebuttom'],
-            "threebuttom_4": req['threebuttom'],
-            "twotop": req['twotop'],
-            "twobuttom": req['twobuttom']
+            "threeTop": req['threeTop'],
+            "threeButtom_1": req['threeButtom_1'],
+            "threeButtom_2": req['threeButtom_2'],
+            "threeButtom_3": req['threeButtom_3'],
+            "threeButtom_4": req['threeButtom_4'],
+            "twoTop": req['twoTop'],
+            "twoButtom": req['twoButtom']
         }
-        result.append(data)
-        insert_result = result_lottery_DB.insert_many(result)
-        inserted_ids = [str(id) for id in insert_result.inserted_ids]
-        resp = jsonify({"data": inserted_ids, "status": 200})
+        document = list(result_lottery_DB.find({}))
+        if (len(document) > 0):
+            newvalues = {
+                "$set": data
+            }
+            result_lottery_DB.update_one(
+                {'_id': ObjectId(document[0]['_id'])}, newvalues)
+        else:
+            result_lottery_DB.insert_one(data)
+        resp = jsonify(
+            {"data": 'create upsert result lottery success', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-result-lottery', methods=['GET'])
+def get_result_lottery():
+    try:
+        result = list(result_lottery_DB.find({}))
+        for document in result:
+            del document['_id']
+        resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
