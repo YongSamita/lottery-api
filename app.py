@@ -7,7 +7,7 @@ import pymongo
 from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
 from bson import ObjectId
 from flask_cors import CORS
-
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -336,6 +336,33 @@ def get_result_lottery():
     return resp
 
 
+@app.route('/api/get-date-lottery', methods=['GET'])
+def get_date_lottery():
+    try:
+        pipeline = [
+            {"$match": {"createdAt": {"$type": "date"}}},
+            {"$project": {
+                "_id": 0,
+                "year": {"$year": "$createdAt"},
+                "month": {"$month": "$createdAt"},
+                "day": {"$dayOfMonth": "$createdAt"}
+            }},
+            {"$group": {
+                "_id": {"year": "$year", "month": "$month", "day": "$day"},
+            }},
+            {"$project": {
+                "_id": 0,
+                "createdAt": {"$dateFromParts": {"year": "$_id.year", "month": "$_id.month", "day": "$_id.day"}}
+            }}
+        ]
+        result = list(lotteryDB.aggregate(pipeline))
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
 @ app.route('/api/get-report', methods=['GET'])
 def get_lottery_report():
     try:
@@ -567,35 +594,3 @@ def get_three_digits():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-#  pipeline = [
-#             {'$match': {
-#                 'lottery': {'$regex': '^.{3}$'}
-#             }},
-#             {
-#                 '$group': {
-#                     '_id': '$lottery',
-#                     'top': {'$sum': '$top'},
-#                     'tod': {'$sum': '$tod'},
-#                     'buttom': {'$sum': '$buttom'},
-#                 }},
-
-#             {
-
-#                 '$sort': {
-#                     '_id': -1
-#                 }
-#             },
-
-#             {
-
-#                 '$project': {
-#                     'lottery': '$_id',
-#                     '_id': 0,
-#                     'top': 1,
-#                     'tod': 1,
-#                     'buttom': 1,
-#                 }
-#             }
-#         ]
