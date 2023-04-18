@@ -248,32 +248,6 @@ def deleteAll():
     return jsonify({"status": "success"})
 
 
-@app.route('/api/create-result-lottery', methods=['POST'])
-def create_result_lottery():
-    try:
-        req = request.get_json()
-        result = []
-        print('/api/create-result-lottery req:', req)
-        data = {}
-        data = {
-            "threetop": req['threetop'],
-            "threebuttom_1": req['threebuttom'],
-            "threebuttom_2": req['threebuttom'],
-            "threebuttom_3": req['threebuttom'],
-            "threebuttom_4": req['threebuttom'],
-            "twotop": req['twotop'],
-            "twobuttom": req['twobuttom']
-        }
-        result.append(data)
-        insert_result = result_lottery_DB.insert_many(result)
-        inserted_ids = [str(id) for id in insert_result.inserted_ids]
-        resp = jsonify({"data": inserted_ids, "status": 200})
-    except Exception as e:
-        print("The error is: ", e)
-        resp = jsonify({"data": '', "status": 400})
-    return resp
-
-
 @app.route('/api/create-limit-lottery', methods=['POST'])
 def create_limit_lottery():
     try:
@@ -317,50 +291,188 @@ def get_limit():
     return resp
 
 
-@app.route('/api/create-check-lottery', methods=['POST'])
-def create_check_lottery():
-
-    return
-
-
-@ app.route('/api/lottery/report', methods=['GET'])
-def get_lottery_report():
-    pipeline = [
-        {
-            # กำหนดเงื่อนไขการ query ใน collection
-            '$match': {
-                'lottery': {'$exists': True, '$type': 'string', '$expr': {'$eq': [{'$strLenCP': '$lottery'}, 3]}}
-            }
-        },
-        {
-            # กำหนดเงื่อนไขการ groupby ด้วย lottery
-            '$group': {
-                '_id': '$lottery',
-                'top': {'$sum': '$top'},
-                'tod': {'$sum': '$tod'},
-                'buttom': {'$sum': '$buttom'},
-            }
-        },
-        {
-            # กำหนดชื่อ column ใหม่สำหรับตัวแปร _id
-            '$project': {
-                'lottery': '$_id',
-                '_id': 0,
-                'top': 1,
-                'tod': 1,
-                'buttom': 1,
-            }
+@app.route('/api/create-result-lottery', methods=['POST'])
+def create_result_lottery():
+    try:
+        req = request.get_json()
+        result = []
+        print('/api/create-result-lottery req:', req)
+        data = {}
+        data = {
+            "threetop": req['threetop'],
+            "threebuttom_1": req['threebuttom'],
+            "threebuttom_2": req['threebuttom'],
+            "threebuttom_3": req['threebuttom'],
+            "threebuttom_4": req['threebuttom'],
+            "twotop": req['twotop'],
+            "twobuttom": req['twobuttom']
         }
-    ]
+        result.append(data)
+        insert_result = result_lottery_DB.insert_many(result)
+        inserted_ids = [str(id) for id in insert_result.inserted_ids]
+        resp = jsonify({"data": inserted_ids, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
 
-    result = lotteryDB.aggregate(pipeline)
 
-    # นำผลลัพธ์มาเก็บใน list ของ dict
-    output = []
-    for doc in result:
-        output.append(doc)
+@ app.route('/api/get-report', methods=['GET'])
+def get_lottery_report():
+    try:
+        lottery = request.args.get('lottery')
+        typeLotto = request.args.get('type')
+        sortByLottery = request.args.get('sortByLottery')
+        pipeline = []
+        result = []
+        if lottery == '1':
+            pipeline.append(
+                {'$match': {
+                    'lottery': {'$regex': '^.{1}$'}
+                }}
+            )
+        elif lottery == '2':
+            pipeline.append(
+                {'$match': {
+                    'lottery': {'$regex': '^.{2}$'}
+                }}
+            )
+        elif lottery == '3':
+            pipeline.append(
+                {'$match': {
+                    'lottery': {'$regex': '^.{3}$'}
+                }}
+            )
 
-    return jsonify(output)
+        pipeline.append(
+            {
+                '$group': {
+                    '_id': '$lottery',
+                    'top': {'$sum': '$top'},
+                    'tod': {'$sum': '$tod'},
+                    'buttom': {'$sum': '$buttom'},
+                }
+            }
+        )
+        if (sortByLottery == 'true'):
+            pipeline.append({
+                '$sort': {
+                    '_id': -1
+                }
+            })
+        else:
+            if (typeLotto == 'top'):
+                pipeline.append({
+                    '$sort': {
+                        'top': -1
+                    }
+                })
+            elif (typeLotto == 'tod'):
+                pipeline.append({
+                    '$sort': {
+                        'tod': -1
+                    }
+                })
+            elif (typeLotto == 'buttom'):
+                pipeline.append({
+                    '$sort': {
+                        'buttom': -1
+                    }
+                })
+        resultLottery = list(lotteryDB.aggregate(pipeline))
+        resultLimit = list(limitDB.find({}))
+        if (len(resultLimit) > 0):
+            for document in resultLottery:
+                if (lottery == '3'):
+                    if (typeLotto == 'top'):
+                        over = document['top'] - resultLimit[0]['threeTop']
+                        document['sum'] = document['top']
+                        if (over <= 0):
+                            document['over'] = 0
+                        else:
+                            document['over'] = over
+                    elif (typeLotto == 'tod'):
+                        over = document['tod'] - resultLimit[0]['threeTod']
+                        document['sum'] = document['tod']
+                        if (over <= 0):
+                            document['over'] = 0
+                        else:
+                            document['over'] = over
+                    elif (typeLotto == 'buttom'):
+                        over = document['buttom'] - \
+                            resultLimit[0]['threeButtom']
+                        document['sum'] = document['buttom']
+                        if (over <= 0):
+                            document['over'] = 0
+                        else:
+                            document['over'] = over
+                if (lottery == '2'):
+                    if (typeLotto == 'top'):
+                        over = document['top'] - resultLimit[0]['twoTop']
+                        document['sum'] = document['top']
+                        if (over <= 0):
+                            document['over'] = 0
+                        else:
+                            document['over'] = over
+                    elif (typeLotto == 'buttom'):
+                        over = document['buttom'] - resultLimit[0]['twoButtom']
+                        document['sum'] = document['buttom']
+                        if (over <= 0):
+                            document['over'] = 0
+                        else:
+                            document['over'] = over
+                if (lottery == '1'):
+                    if (typeLotto == 'top'):
+                        document['sum'] = document['top']
+                        document['over'] = 0
+                    elif (typeLotto == 'buttom'):
+                        document['sum'] = document['buttom']
+                        document['over'] = 0
+                document['id'] = document['_id']
+                document['lottery'] = document['_id']
+                del document['buttom']
+                del document['top']
+                del document['tod']
+                del document['_id']
+                result.append(document)
+        else:
+            for document in resultLottery:
+                if (lottery == '3'):
+                    if (typeLotto == 'top'):
+                        document['sum'] = document['top']
+                        document['over'] = 0
+                    elif (typeLotto == 'tod'):
+                        document['sum'] = document['tod']
+                        document['over'] = 0
+                    elif (typeLotto == 'buttom'):
+                        document['sum'] = document['buttom']
+                        document['over'] = 0
+                if (lottery == '2'):
+                    if (typeLotto == 'top'):
+                        document['sum'] = document['top']
+                        document['over'] = 0
+                    elif (typeLotto == 'buttom'):
+                        document['sum'] = document['buttom']
+                        document['over'] = 0
+                if (lottery == '1'):
+                    if (typeLotto == 'top'):
+                        document['sum'] = document['top']
+                        document['over'] = 0
+                    elif (typeLotto == 'buttom'):
+                        document['sum'] = document['buttom']
+                        document['over'] = 0
+                document['id'] = document['_id']
+                document['lottery'] = document['_id']
+                del document['buttom']
+                del document['top']
+                del document['tod']
+                del document['_id']
+                result.append(document)
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
 
 
 # ลอยแพ
@@ -436,3 +548,35 @@ def get_three_digits():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+#  pipeline = [
+#             {'$match': {
+#                 'lottery': {'$regex': '^.{3}$'}
+#             }},
+#             {
+#                 '$group': {
+#                     '_id': '$lottery',
+#                     'top': {'$sum': '$top'},
+#                     'tod': {'$sum': '$tod'},
+#                     'buttom': {'$sum': '$buttom'},
+#                 }},
+
+#             {
+
+#                 '$sort': {
+#                     '_id': -1
+#                 }
+#             },
+
+#             {
+
+#                 '$project': {
+#                     'lottery': '$_id',
+#                     '_id': 0,
+#                     'top': 1,
+#                     'tod': 1,
+#                     'buttom': 1,
+#                 }
+#             }
+#         ]
