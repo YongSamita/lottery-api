@@ -354,7 +354,7 @@ def get_lottery_report():
                 }
             }
         )
-        if (sortByLottery):
+        if (sortByLottery == 'true'):
             pipeline.append({
                 '$sort': {
                     '_id': -1
