@@ -1,4 +1,3 @@
-import datetime
 import json
 from flask import Flask, request, jsonify, Response
 from itertools import combinations, permutations
@@ -57,14 +56,16 @@ def create_lottery():
         elif req['type'] == 'ยำ':
             result = handleCreateYums(req)
         else:
-            req['createdAt'] = datetime.datetime.now()
+            req['createdAt'] = datetime.now()
             result.append(req)
+        print(result)
         lotteryDB.insert_many(result)
         for document in result:
-            document['createdAt'] = document['createdAt'].strftime(
-                '%Y-%m-%d %H:%M:%S.%f')
+            # document['createdAt'] = document['createdAt'].strftime(
+            #     '%Y-%m-%d %H:%M:%S.%f')
             document['_id'] = str(document['_id'])
             document['id'] = str(document['_id'])
+            del document['createdAt']
 
         resp = jsonify({"data": result, "status": 200})
     except Exception as e:
@@ -154,8 +155,6 @@ def create_customer():
         data = {
             "customerName": req['customerName'],
             "customerID": req['customerID'],
-            "createdBy": req['createdBy'],
-            "createdAt": datetime.datetime.now(),
             "threeTop": {
                 'threeTopPrice':  req['threeTopPrice'],
                 'threeTopPercent':  req['threeTopPercent']
@@ -370,31 +369,55 @@ def get_lottery_report():
         count = request.args.get('count')
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
+        dateLottery = request.args.get('dateLottery')
+        start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_of_day = start_date.replace(hour=23, minute=59, second=59)
+        end_of_day_str = end_of_day.strftime('%a, %d %b %Y %H:%M:%S %Z')
+        print(end_of_day_str)
+
         pipeline = []
         result = []
         if count == 'วิ่ง':
             pipeline.append(
                 {'$match': {
-                    'lottery': {'$regex': '^.{1}$'}
+                    'lottery': {'$regex': '^.{1}$'},
+                    'createdAt': {'$gte': start_date, '$lte': end_of_day_str}
                 }}
             )
         elif count == '2 ตัว':
             pipeline.append(
                 {'$match': {
-                    'lottery': {'$regex': '^.{2}$'}
-                }}
+                    'lottery': {'$regex': '^.{2}$'},
+                 'createdAt': {'$gte': start_date, '$lte': end_of_day_str}
+                 }}
             )
         elif count == '3 ตัว':
             pipeline.append(
                 {'$match': {
-                    'lottery': {'$regex': '^.{3}$'}
+                    'lottery': {'$regex': '^.{3}$'},
+                    'createdAt': {'$gte': start_date, '$lte': end_of_day_str}
                 }}
             )
+            # pipeline.append(
+            #     {
+            #         "$addFields": {
+            #             "date": {
+            #                 "$dateToString": {
+            #                     "format": "%Y-%m-%d",
+            #                     "date": "$createdAt"
+            #                 }
+            #             }
+            #         }
+            #     }
 
+            # )
         pipeline.append(
             {
                 '$group': {
-                    '_id': '$lottery',
+                    '_id': {
+                        'lottery': '$lottery',
+                        # 'createdAt': "$date",
+                    },
                     'top': {'$sum': '$top'},
                     'tod': {'$sum': '$tod'},
                     'buttom': {'$sum': '$buttom'},
@@ -595,3 +618,35 @@ def get_three_digits():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+#  pipeline = [
+#             {'$match': {
+#                 'lottery': {'$regex': '^.{3}$'}
+#             }},
+#             {
+#                 '$group': {
+#                     '_id': '$lottery',
+#                     'top': {'$sum': '$top'},
+#                     'tod': {'$sum': '$tod'},
+#                     'buttom': {'$sum': '$buttom'},
+#                 }},
+
+#             {
+
+#                 '$sort': {
+#                     '_id': -1
+#                 }
+#             },
+
+#             {
+
+#                 '$project': {
+#                     'lottery': '$_id',
+#                     '_id': 0,
+#                     'top': 1,
+#                     'tod': 1,
+#                     'buttom': 1,
+#                 }
+#             }
+#         ]

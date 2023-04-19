@@ -1,6 +1,7 @@
-import datetime
+
 from itertools import combinations, permutations
 from flask import request
+from datetime import datetime
 
 
 def handleCreateThreeSixSwitch(data):
@@ -26,7 +27,7 @@ def handleCreateThreeSixSwitch(data):
                 "buttom": data['buttom'],
                 "type": "6 กลับ",
                 "createdBy": data['createdBy'],
-                "createdAt": datetime.datetime.now()
+                "createdAt":  datetime.now()
             })
         else:
             json_list.append({
@@ -39,7 +40,7 @@ def handleCreateThreeSixSwitch(data):
                 "buttom": data['buttom'],
                 "type": "3 กลับ",
                 "createdBy": data['createdBy'],
-                "createdAt": datetime.datetime.now()
+                "createdAt":  datetime.now()
             })
     return json_list
 
@@ -67,7 +68,7 @@ def handleCreateNineteen(data):
             "buttom": data['buttom'],
             "type": "19 ประตู",
             "createdBy": data['createdBy'],
-            "createdAt": datetime.datetime.now()
+            "createdAt":  datetime.now()
         })
 
     return json_list
@@ -92,7 +93,7 @@ def handleCreateCupleTod(data):
             "buttom": data['buttom'],
             "type": "คู่โต๊ด",
             "createdBy": data['createdBy'],
-            "createdAt": datetime.datetime.now()
+            "createdAt":  datetime.now()
         })
     return json_list
 
@@ -119,7 +120,7 @@ def handleCreateLoyPae(data):
             "buttom": data['buttom'],
             "type": "ลอยแพ",
             "createdBy": data['createdBy'],
-            "createdAt": datetime.datetime.now()
+            "createdAt":  datetime.now()
         })
     return json_list
 
@@ -149,6 +150,6 @@ def handleCreateYums(data):
             "buttom": data['buttom'],
             "type": "ยำ",
             "createdBy": data['createdBy'],
-            "createdAt": datetime.datetime.now()
+            "createdAt":  datetime.now()
         })
     return json_list
