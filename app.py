@@ -370,6 +370,7 @@ def get_lottery_report():
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
         dateLottery = request.args.get('dateLottery')
+        print('get-report req:', count, typeLotto, sortByLottery, dateLottery)
         start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
         end_date = start_date.replace(hour=23, minute=59, second=59)
         pipeline = []
@@ -395,24 +396,24 @@ def get_lottery_report():
                     'createdAt': {'$gte': start_date, '$lte': end_date}
                 }}
             )
-            pipeline.append(
-                {
-                    "$addFields": {
-                        "date": {
-                            "$dateToString": {
-                                "format": "%Y-%m-%d",
-                                "date": "$createdAt"
-                            }
+        pipeline.append(
+            {
+                "$addFields": {
+                    "createdAt": {
+                        "$dateToString": {
+                            "format": "%Y-%m-%d",
+                            "date": "$createdAt"
                         }
                     }
                 }
-            )
+            }
+        )
         pipeline.append(
             {
                 '$group': {
                     '_id': {
                         'lottery': '$lottery',
-                        'createdAt': "$date",
+                        'createdAt': "$createdAt",
                     },
                     'top': {'$sum': '$top'},
                     'tod': {'$sum': '$tod'},
@@ -445,9 +446,7 @@ def get_lottery_report():
                         'buttom': -1
                     }
                 })
-
         resultLottery = list(lotteryDB.aggregate(pipeline))
-        print(len(resultLottery))
         resultLimit = list(limitDB.find({}))
         if (len(resultLimit) > 0):
             for document in resultLottery:
@@ -530,8 +529,9 @@ def get_lottery_report():
                     elif (typeLotto == 'ล่าง'):
                         document['sum'] = document['buttom']
                         document['over'] = 0
-                document['id'] = document['_id']
-                document['lottery'] = document['_id']
+                document['id'] = document['_id']['lottery']
+                document['lottery'] = document['_id']['lottery']
+                document['createdAt'] = document['_id']['createdAt']
                 del document['buttom']
                 del document['top']
                 del document['tod']
