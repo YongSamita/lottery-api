@@ -353,7 +353,8 @@ def get_date_lottery():
             {"$project": {
                 "_id": 0,
                 "createdAt": {"$dateFromParts": {"year": "$_id.year", "month": "$_id.month", "day": "$_id.day"}}
-            }}
+            }},
+            {"$sort": {"createdAt": -1}}
         ]
         result = list(lotteryDB.aggregate(pipeline))
         resp = jsonify({"data": result, "status": 200})
