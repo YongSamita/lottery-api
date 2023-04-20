@@ -155,46 +155,26 @@ def create_customer():
         data = {
             "customerName": req['customerName'],
             "customerID": req['customerID'],
-            "threeTop": {
-                'threeTopPrice':  req['threeTopPrice'],
-                'threeTopPercent':  req['threeTopPercent']
-            },
-            "threeTod": {
-                'threeTodPrice':  req['threeTodPrice'],
-                'threeTodPercent':  req['threeTodPercent']
-            },
-            "threeButtom": {
-                'threeButtomPrice':  req['threeButtomPrice'],
-                'threeButtomPercent':  req['threeButtomPercent']
-            },
-            "twoTop": {
-                'twoTopPrice':  req['twoTopPrice'],
-                'twoTopPercent':  req['twoTopPercent']
-            },
-            "twoButtom": {
-                'twoButtomPrice':  req['twoButtomPrice'],
-                'twoButtomPercent':  req['twoButtomPercent']
-            },
-            "oneTop": {
-                'oneTopPrice':  req['oneTopPrice'],
-                'oneTopPercent':  req['oneTopPercent']
-            },
-            "oneButtom": {
-                'oneButtomPrice':  req['oneButtomPrice'],
-                'oneButtomPercent':  req['oneButtomPercent']
-            },
-            "coupleTod": {
-                'coupleTodPrice':  req['coupleTodPrice'],
-                'coupleTodPercent':  req['coupleTodPercent']
-            },
-            "loypae": {
-                'loypaePrice':  req['loypaePrice'],
-                'loypaePercent':  req['loypaePercent']
-            },
-            "yum": {
-                'yumPrice':  req['yumPrice'],
-                'yumPercent':  req['yumPercent']
-            },
+            "threeTopPrice": req['threeTopPrice'],
+            "threeTopPercent": req['threeTopPercent'],
+            "threeTodPrice": req['threeTodPrice'],
+            "threeTodPercent": req['threeTodPercent'],
+            "threeButtomPrice": req['threeButtomPrice'],
+            "threeButtomPercent": req['threeButtomPercent'],
+            "twoTopPrice": req['twoTopPrice'],
+            "twoTopPercent": req['twoTopPercent'],
+            "twoButtomPrice": req['twoButtomPrice'],
+            "twoButtomPercent": req['twoButtomPercent'],
+            "oneTopPrice": req['oneTopPrice'],
+            "oneTopPercent": req['oneTopPercent'],
+            "oneButtomPrice": req['oneButtomPrice'],
+            "oneButtomPercent": req['oneButtomPercent'],
+            "coupleTodPrice": req['coupleTodPrice'],
+            "coupleTodPercent": req['coupleTodPercent'],
+            "loypaePrice": req['loypaePrice'],
+            "loypaePercent": req['loypaePercent'],
+            "yumPrice": req['yumPrice'],
+            "yumPercent": req['yumPercent']
         }
         if (len(document) == 0):
             result.append(data)
@@ -207,17 +187,14 @@ def create_customer():
             filter = {}
             filter = {'customerID': req['customerID']}
             newvalues = {
-                "$set": {'customerName': req['customerName'], 'customerID': req['customerID'],
-                         'threeTop': {'threeTopPrice': req['threeTopPrice'], 'threeTopPercent': req['threeTopPercent']},
-                         'threeTod': {'threeTodPrice': req['threeTodPrice'], 'threeTodPercent': req['threeTodPercent']},
-                         'threeButtom': {'threeButtomPrice': req['threeButtomPrice'], 'threeButtomPercent': req['threeButtomPercent']},
-                         'twoTop': {'twoTopPrice': req['twoTopPrice'], 'twoTopPercent': req['twoTopPercent']},
-                         'twoButtom': {'twoButtomPrice': req['twoButtomPrice'], 'twoButtomPercent': req['twoButtomPercent']},
-                         'oneTop': {'oneTopPrice': req['oneTopPrice'], 'oneTopPercent': req['oneTopPercent']},
-                         'oneButtom': {'oneButtomPrice': req['oneButtomPrice'], 'oneButtomPercent': req['oneButtomPercent']},
-                         'coupleTod': {'coupleTodPrice': req['coupleTodPrice'], 'coupleTodPercent': req['coupleTodPercent']},
-                         'loypae': {'loypaePrice': req['loypaePrice'], 'loypaePercent': req['loypaePercent']},
-                         'yum': {'yumPrice': req['yumPrice'], 'yumPercent': req['yumPercent']},
+                "$set": {'customerName': req['customerName'], 'customerID': req['customerID'], 'threeTopPrice': req['threeTopPrice'],
+                         'threeTopPercent': req['threeTopPercent'], 'threeTodPrice': req['threeTodPrice'], 'threeTodPercent': req['threeTodPercent'],
+                         'threeButtomPrice': req['threeButtomPrice'], 'threeButtomPercent': req['threeButtomPercent'],
+                         'twoTopPrice': req['twoTopPrice'], 'twoTopPercent': req['twoTopPercent'], 'twoButtomPrice': req['twoButtomPrice'],
+                         'twoButtomPercent': req['twoButtomPercent'], 'oneTopPrice': req['oneTopPrice'], 'oneTopPercent': req['oneTopPercent'],
+                         'oneButtomPrice': req['oneButtomPrice'], 'oneButtomPercent': req['oneButtomPercent'], 'coupleTodPrice': req['coupleTodPrice'],
+                         'coupleTodPercent': req['coupleTodPercent'], 'loypaePrice': req['loypaePrice'], 'loypaePercent': req['loypaePercent'],
+                         'yumPrice': req['yumPrice'], 'yumPercent': req['yumPercent'],
                          }}
             customerDB.update_one(filter, newvalues)
             resp = jsonify({"data": 'update success', "status": 200})
