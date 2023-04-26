@@ -1,4 +1,4 @@
-from flask import Flask, make_response, render_template, request, jsonify
+from flask import Flask, make_response, request, jsonify
 from itertools import combinations, permutations
 from pymongo import MongoClient
 import pymongo
@@ -6,7 +6,6 @@ from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateN
 from bson import ObjectId
 from flask_cors import CORS
 from datetime import datetime
-import pdfkit
 import os
 from fpdf import FPDF
 
