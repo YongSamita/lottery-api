@@ -538,7 +538,7 @@ def download_report():
     pdf.cell(200, 10, "Hello, World!")
 
     # Save the PDF
-    pdf_content = pdf.output("output.pdf").encode('latin1')
+    pdf_content = pdf.output(dest='S').encode('latin1')
 
     # Create response object
     response = make_response(pdf_content)
