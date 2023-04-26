@@ -1,5 +1,4 @@
-import json
-from flask import Flask, request, jsonify, Response
+from flask import Flask, make_response, render_template, request, jsonify
 from itertools import combinations, permutations
 from pymongo import MongoClient
 import pymongo
@@ -7,9 +6,16 @@ from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateN
 from bson import ObjectId
 from flask_cors import CORS
 from datetime import datetime
+import pdfkit
+import os
+from fpdf import FPDF
 
 app = Flask(__name__)
+app.config['PDF_FOLDER'] = 'static/pdf/'
+app.config['TEMPLATE_FOLDER'] = 'templates/'
 CORS(app)
+
+os.environ['WKHTMLTOPDF_PATH'] = 'wkhtmltopdf'
 
 client = MongoClient(
     'mongodb+srv://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
@@ -58,11 +64,8 @@ def create_lottery():
         else:
             req['createdAt'] = datetime.now()
             result.append(req)
-        print(result)
         lotteryDB.insert_many(result)
         for document in result:
-            # document['createdAt'] = document['createdAt'].strftime(
-            #     '%Y-%m-%d %H:%M:%S.%f')
             document['_id'] = str(document['_id'])
             document['id'] = str(document['_id'])
             del document['createdAt']
@@ -519,6 +522,35 @@ def get_lottery_report():
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
     return resp
+
+
+@ app.route('/api/download-report', methods=['GET'])
+def download_report():
+    # Create FPDF object
+    pdf = FPDF()
+
+    # Add a page
+    pdf.add_page()
+
+    # Set font and size
+    pdf.set_font("Arial", size=12)
+
+    # Write some text
+    pdf.cell(200, 10, "Hello, World!")
+
+    # Save the PDF
+    pdf_content = pdf.output("output.pdf").encode('latin1')
+
+    # Create response object
+    response = make_response(pdf_content)
+
+    # Set content type to PDF
+    response.headers['Content-Type'] = 'application/pdf'
+
+    # Set Content-Disposition header to force download
+    response.headers['Content-Disposition'] = 'attachment; filename=output.pdf'
+
+    return response
 
 
 # ลอยแพ
