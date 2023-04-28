@@ -6,15 +6,12 @@ from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateN
 from bson import ObjectId
 from flask_cors import CORS
 from datetime import datetime
-import os
 from fpdf import FPDF
+from util.report import handleGetPipelineReport, handleMappingResponseData
 
 app = Flask(__name__)
-app.config['PDF_FOLDER'] = 'static/pdf/'
-app.config['TEMPLATE_FOLDER'] = 'templates/'
 CORS(app)
 
-os.environ['WKHTMLTOPDF_PATH'] = 'wkhtmltopdf'
 
 client = MongoClient(
     'mongodb+srv://komsark01:promix02.@lotto.atl56bl.mongodb.net/?retryWrites=true&w=majority')
@@ -349,174 +346,18 @@ def get_lottery_report():
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
         dateLottery = request.args.get('dateLottery')
-        print('get-report req:', count, typeLotto, sortByLottery, dateLottery)
+        overLottery = request.args.get('overLottery')
+        print('get-report req:', count, typeLotto,
+              sortByLottery, overLottery, dateLottery)
         start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
         end_date = start_date.replace(hour=23, minute=59, second=59)
-        pipeline = []
-        result = []
-        if count == 'วิ่ง':
-            pipeline.append(
-                {'$match': {
-                    'lottery': {'$regex': '^.{1}$'},
-                    'createdAt': {'$gte': start_date, '$lte': end_date}
-                }}
-            )
-        elif count == '2 ตัว':
-            pipeline.append(
-                {'$match': {
-                    'lottery': {'$regex': '^.{2}$'},
-                    'createdAt': {'$gte': start_date, '$lte': end_date}
-                }}
-            )
-        elif count == '3 ตัว':
-            pipeline.append(
-                {'$match': {
-                    'lottery': {'$regex': '^.{3}$'},
-                    'createdAt': {'$gte': start_date, '$lte': end_date}
-                }}
-            )
-        pipeline.append(
-            {
-                "$addFields": {
-                    "createdAt": {
-                        "$dateToString": {
-                            "format": "%Y-%m-%d",
-                            "date": "$createdAt"
-                        }
-                    }
-                }
-            }
-        )
-        pipeline.append(
-            {
-                '$group': {
-                    '_id': {
-                        'lottery': '$lottery',
-                        'createdAt': "$createdAt",
-                    },
-                    'top': {'$sum': '$top'},
-                    'tod': {'$sum': '$tod'},
-                    'buttom': {'$sum': '$buttom'},
-                }
-            }
-        )
-        if (sortByLottery == 'true'):
-            pipeline.append({
-                '$sort': {
-                    '_id': -1
-                }
-            })
-        else:
-            if (typeLotto == 'บน'):
-                pipeline.append({
-                    '$sort': {
-                        'top': -1
-                    }
-                })
-            elif (typeLotto == 'โต๊ด'):
-                pipeline.append({
-                    '$sort': {
-                        'tod': -1
-                    }
-                })
-            elif (typeLotto == 'ล่าง'):
-                pipeline.append({
-                    '$sort': {
-                        'buttom': -1
-                    }
-                })
+        pipeline = handleGetPipelineReport(
+            count, typeLotto, sortByLottery, start_date, end_date)
         resultLottery = list(lotteryDB.aggregate(pipeline))
         resultLimit = list(limitDB.find({}))
-        if (len(resultLimit) > 0):
-            for document in resultLottery:
-                if (count == '3 ตัว'):
-                    if (typeLotto == 'บน'):
-                        over = document['top'] - resultLimit[0]['threeTop']
-                        document['sum'] = document['top']
-                        if (over <= 0):
-                            document['over'] = 0
-                        else:
-                            document['over'] = over
-                    elif (typeLotto == 'โต๊ด'):
-                        over = document['tod'] - resultLimit[0]['threeTod']
-                        document['sum'] = document['tod']
-                        if (over <= 0):
-                            document['over'] = 0
-                        else:
-                            document['over'] = over
-                    elif (typeLotto == 'ล่าง'):
-                        over = document['buttom'] - \
-                            resultLimit[0]['threeButtom']
-                        document['sum'] = document['buttom']
-                        if (over <= 0):
-                            document['over'] = 0
-                        else:
-                            document['over'] = over
-                if (count == '2 ตัว'):
-                    if (typeLotto == 'บน'):
-                        over = document['top'] - resultLimit[0]['twoTop']
-                        document['sum'] = document['top']
-                        if (over <= 0):
-                            document['over'] = 0
-                        else:
-                            document['over'] = over
-                    elif (typeLotto == 'ล่าง'):
-                        over = document['buttom'] - resultLimit[0]['twoButtom']
-                        document['sum'] = document['buttom']
-                        if (over <= 0):
-                            document['over'] = 0
-                        else:
-                            document['over'] = over
-                if (count == 'วิ่ง'):
-                    if (typeLotto == 'บน'):
-                        document['sum'] = document['top']
-                        document['over'] = 0
-                    elif (typeLotto == 'ล่าง'):
-                        document['sum'] = document['buttom']
-                        document['over'] = 0
-                document['id'] = document['_id']['lottery']
-                document['lottery'] = document['_id']['lottery']
-                document['createdAt'] = document['_id']['createdAt']
-                del document['buttom']
-                del document['top']
-                del document['tod']
-                del document['_id']
-                result.append(document)
-        else:
-            for document in resultLottery:
-                if (count == '3 ตัว'):
-                    if (typeLotto == 'บน'):
-                        document['sum'] = document['top']
-                        document['over'] = 0
-                    elif (typeLotto == 'โต๊ด'):
-                        document['sum'] = document['tod']
-                        document['over'] = 0
-                    elif (typeLotto == 'ล่าง'):
-                        document['sum'] = document['buttom']
-                        document['over'] = 0
-                if (count == '2 ตัว'):
-                    if (typeLotto == 'บน'):
-                        document['sum'] = document['top']
-                        document['over'] = 0
-                    elif (typeLotto == 'ล่าง'):
-                        document['sum'] = document['buttom']
-                        document['over'] = 0
-                if (count == 'วิ่ง'):
-                    if (typeLotto == 'บน'):
-                        document['sum'] = document['top']
-                        document['over'] = 0
-                    elif (typeLotto == 'ล่าง'):
-                        document['sum'] = document['buttom']
-                        document['over'] = 0
-                document['id'] = document['_id']['lottery']
-                document['lottery'] = document['_id']['lottery']
-                document['createdAt'] = document['_id']['createdAt']
-                del document['buttom']
-                del document['top']
-                del document['tod']
-                del document['_id']
-                result.append(document)
-        resp = jsonify({"data": result, "status": 200})
+        resultMapping = handleMappingResponseData(
+            count, typeLotto, overLottery, resultLottery, resultLimit)
+        resp = jsonify({"data": resultMapping, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -525,31 +366,73 @@ def get_lottery_report():
 
 @ app.route('/api/download-report', methods=['GET'])
 def download_report():
-    # Create FPDF object
-    pdf = FPDF()
+    try:
+        count = request.args.get('count')
+        typeLotto = request.args.get('type')
+        sortByLottery = request.args.get('sortByLottery')
+        dateLottery = request.args.get('dateLottery')
+        overLottery = request.args.get('overLottery')
+        print('get-report req:', count, typeLotto,
+              sortByLottery, overLottery, dateLottery)
+        start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_date = start_date.replace(hour=23, minute=59, second=59)
+        pipeline = handleGetPipelineReport(
+            count, typeLotto, sortByLottery, start_date, end_date)
+        resultLottery = list(lotteryDB.aggregate(pipeline))
+        resultLimit = list(limitDB.find({}))
+        resultMapping = handleMappingResponseData(
+            count, typeLotto, overLottery, resultLottery, resultLimit)
+        header = ['ตัวเลข', 'ยอดรวม', 'ยอดเกิน']
+        col_widths = [50, 50, 50]
+        pdf = FPDF()
+        pdf.add_font('Sarabun', '', 'fonts/sarabun-light.ttf', uni=True)
+        pdf.set_font('Sarabun', '', 14)
+        page_count = 1
+        # x = (pdf.w - sum(col_widths)) / 2
+        # y = pdf.y + 10
 
-    # Add a page
-    pdf.add_page()
+        for i, doc in enumerate(resultMapping):
 
-    # Set font and size
-    pdf.set_font("Arial", size=12)
+            if i == 0 or i % 20 == 0:
+                pdf.add_page()
+                pdf.set_y(10)
+                pdf.set_font('Sarabun', '', 14)
+                pdf.cell(170, 10, datetime.now().strftime(
+                    '%Y-%m-%d'), align='C')
+                pdf.cell(30, 10,
+                         'แผ่นที่ ' + str(page_count))
 
-    # Write some text
-    pdf.cell(200, 10, "Hello, World!")
+                page_count += 1
+                # Add table headers
+                pdf.ln(20)
+                # for j in range(len(header)):
+                #     pdf.cell(col_widths[j], 10, header[j], border=1)
+                # pdf.ln()
+                pdf.cell(col_widths[0], 10, header[0], border=1, align='C')
+                pdf.cell(col_widths[1], 10, header[1], border=1, align='C')
+                pdf.cell(col_widths[2], 10, header[2], border=1, align='C')
+                pdf.ln()
+            pdf.cell(col_widths[0], 10, doc['lottery'], border=1, align='C')
+            pdf.cell(col_widths[1], 10, str(doc['sum']), border=1, align='C')
+            pdf.cell(col_widths[2], 10, str(doc['over']), border=1, align='C')
+            pdf.ln()
 
-    # Save the PDF
-    pdf_content = pdf.output(dest='S').encode('latin1')
+        # Save the PDF
+        pdf_content = pdf.output(dest='S').encode('latin-1')
 
-    # Create response object
-    response = make_response(pdf_content)
+        # Create response object
+        resp = make_response(pdf_content)
 
-    # Set content type to PDF
-    response.headers['Content-Type'] = 'application/pdf'
+        # Set content type to PDF
+        resp.headers['Content-Type'] = 'application/pdf'
 
-    # Set Content-Disposition header to force download
-    response.headers['Content-Disposition'] = 'attachment; filename=output.pdf'
+        # Set Content-Disposition header to force download
+        resp.headers['Content-Disposition'] = 'attachment; filename=report.pdf'
 
-    return response
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
 
 
 # ลอยแพ
