@@ -7,7 +7,7 @@ from bson import ObjectId
 from flask_cors import CORS
 from datetime import datetime
 from fpdf import FPDF
-from util.report import handleGetPipelineReport, handleMappingResponseData
+from util.report import handleGetLimitReport, handleGetPipelineReport, handleMappingResponseData
 
 app = Flask(__name__)
 CORS(app)
@@ -367,6 +367,8 @@ def get_lottery_report():
 @ app.route('/api/download-report', methods=['GET'])
 def download_report():
     try:
+        over_sum = 0
+        sum_sum = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
@@ -382,51 +384,75 @@ def download_report():
         resultLimit = list(limitDB.find({}))
         resultMapping = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
+        limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
+        for lottery in resultMapping:
+            over_sum += lottery["over"]
+            sum_sum += lottery["sum"]
+        thai_months = [
+            None, 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม',
+            'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน',
+            'ธันวาคม'
+        ]
+        thai_year_offset = 543
+        thai_date_str = f"{start_date.day} {thai_months[start_date.month]} {start_date.year + thai_year_offset}"
         header = ['ตัวเลข', 'ยอดรวม', 'ยอดเกิน']
-        col_widths = [50, 50, 50]
         pdf = FPDF()
-        pdf.add_font('Sarabun', '', 'fonts/sarabun-light.ttf', uni=True)
-        pdf.set_font('Sarabun', '', 14)
+        pdf.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
         page_count = 1
-        # x = (pdf.w - sum(col_widths)) / 2
-        # y = pdf.y + 10
-
-        for i, doc in enumerate(resultMapping):
-
-            if i == 0 or i % 20 == 0:
-                pdf.add_page()
-                pdf.set_y(10)
-                pdf.set_font('Sarabun', '', 14)
-                pdf.cell(170, 10, datetime.now().strftime(
-                    '%Y-%m-%d'), align='C')
-                pdf.cell(30, 10,
-                         'แผ่นที่ ' + str(page_count))
-
-                page_count += 1
-                # Add table headers
-                pdf.ln(20)
-                # for j in range(len(header)):
-                #     pdf.cell(col_widths[j], 10, header[j], border=1)
-                # pdf.ln()
-                pdf.cell(col_widths[0], 10, header[0], border=1, align='C')
-                pdf.cell(col_widths[1], 10, header[1], border=1, align='C')
-                pdf.cell(col_widths[2], 10, header[2], border=1, align='C')
+        if len(resultMapping) > 0:
+            for i, doc in enumerate(resultMapping):
+                if i == 0 or i % 15 == 0:
+                    pdf.add_page()
+                    pdf.set_font('DB-Heavent', '', 16)
+                    pdf.set_xy(20, 20)
+                    pdf.cell(60, 10, 'ค่าตั้งรับ')
+                    pdf.cell(100, 10, thai_date_str)
+                    pdf.cell(0, 10,
+                             'แผ่นที่ ' + str(page_count))
+                    pdf.ln()
+                    pdf.set_x(20)
+                    pdf.cell(65, 10, str(limitReport))
+                    pdf.cell(60, 10, count+typeLotto)
+                    page_count += 1
+                    pdf.ln(20)
+                    pdf.set_x(30)
+                    for j in range(len(header)):
+                        pdf.cell(50, 10, header[j], border=1)
+                    pdf.ln()
+                pdf.set_x(30)
+                pdf.cell(50, 10, doc['lottery'], border=1)
+                pdf.cell(50, 10, str(doc['sum']), border=1)
+                pdf.cell(50, 10, str(
+                    doc['over']), border=1)
                 pdf.ln()
-            pdf.cell(col_widths[0], 10, doc['lottery'], border=1, align='C')
-            pdf.cell(col_widths[1], 10, str(doc['sum']), border=1, align='C')
-            pdf.cell(col_widths[2], 10, str(doc['over']), border=1, align='C')
+        else:
+            pdf.add_page()
+            pdf.set_font('DB-Heavent', '', 16)
+            pdf.set_xy(20, 20)
+            pdf.cell(60, 10, 'ค่าตั้งรับ')
+            pdf.cell(100, 10, thai_date_str)
+            pdf.cell(0, 10,
+                     'แผ่นที่ ' + str(page_count))
             pdf.ln()
-
-        # Save the PDF
+            pdf.set_x(20)
+            pdf.cell(65, 10, str(limitReport))
+            pdf.cell(60, 10, count+typeLotto)
+            page_count += 1
+            pdf.ln(20)
+            pdf.set_x(30)
+            for j in range(len(header)):
+                pdf.cell(50, 10, header[j], border=1)
+            pdf.ln()
+        pdf.ln(10)
+        pdf.set_x(30)
+        pdf.cell(50, 10, 'รวมยอดรวม: '+str(sum_sum), ln=1)
+        pdf.set_x(30)
+        pdf.cell(50, 10, 'ยอดรับ: '+str(limitReport), ln=1)
+        pdf.set_x(30)
+        pdf.cell(50, 10, 'รวมยอดเกิน: '+str(over_sum), ln=1)
         pdf_content = pdf.output(dest='S').encode('latin-1')
-
-        # Create response object
         resp = make_response(pdf_content)
-
-        # Set content type to PDF
         resp.headers['Content-Type'] = 'application/pdf'
-
-        # Set Content-Disposition header to force download
         resp.headers['Content-Disposition'] = 'attachment; filename=report.pdf'
 
     except Exception as e:
@@ -435,108 +461,5 @@ def download_report():
     return resp
 
 
-# ลอยแพ
-@ app.route('/combinations', methods=['POST'])
-def get_combinations():
-    data = request.get_json()['name']
-    result = list(combinations(data, 3))
-    result = set(result)
-    unique_result = list(set(result))  # select only unique values
-    unique_result.sort()
-    return jsonify({'combinations': unique_result})
-
-
-# ยำ(มั้ง)
-@ app.route('/api/permutations', methods=['POST'])
-def get_permutations():
-    data = request.get_json()['name']
-    result = []
-    for perm in permutations(data, 3):
-        swapped_perm = (perm[2], perm[1], perm[0])
-        result.append(swapped_perm)
-    result = set(result)
-    unique_result = list(set(result))  # select only unique values
-    unique_result.sort()
-    return jsonify({'permutations': unique_result})
-
-
-# 19ประตู
-@ app.route('/api/get_two_digits', methods=['POST'])
-def get_two_digits():
-    data = request.get_json()['name']
-    print(data)
-    two_digits = []
-    for i in range(10):
-        two_digit = str(i) + str(data[0])
-        two_digits.append(two_digit)
-        two_digit = str(data[0]) + str(i)
-        two_digits.append(two_digit)
-    two_digits = set(two_digits)
-    unique_result = list(set(two_digits))  # select only unique values
-    unique_result.sort()
-    return jsonify({'two_digits': unique_result})
-
-
-# 3กลับ/6กลับ
-@ app.route('/permute', methods=['POST'])
-def get_permute():
-    data = request.get_json()['name']
-    result = []
-    for perm in permutations(data, 3):
-        swapped_perm = (perm[0], perm[1], perm[2])
-        result.append(swapped_perm)
-    result = set(result)
-    unique_result = list(set(result))  # select only unique values
-    unique_result.sort()
-    return jsonify({'permutations': unique_result})
-
-
-# คู่โต๊ด
-@ app.route('/api/get_three_digits', methods=['POST'])
-def get_three_digits():
-    data = request.get_json()['name']
-    print(data)
-    three_digits = []
-    result = []
-    for i in range(10):
-        three_digit = str(i) + str(data[0]) + str(data[1])
-        three_digits.append(three_digit)
-    unique_result = list(set(three_digits))  # select only unique values
-    unique_result.sort()
-    return jsonify({'three_digits': unique_result})
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-#  pipeline = [
-#             {'$match': {
-#                 'lottery': {'$regex': '^.{3}$'}
-#             }},
-#             {
-#                 '$group': {
-#                     '_id': '$lottery',
-#                     'top': {'$sum': '$top'},
-#                     'tod': {'$sum': '$tod'},
-#                     'buttom': {'$sum': '$buttom'},
-#                 }},
-
-#             {
-
-#                 '$sort': {
-#                     '_id': -1
-#                 }
-#             },
-
-#             {
-
-#                 '$project': {
-#                     'lottery': '$_id',
-#                     '_id': 0,
-#                     'top': 1,
-#                     'tod': 1,
-#                     'buttom': 1,
-#                 }
-#             }
-#         ]

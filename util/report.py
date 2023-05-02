@@ -175,3 +175,20 @@ def handleMappingResponseData(count, typeLotto, overLottery, resultLottery, resu
                 result.append(document)
 
     return result
+
+
+def handleGetLimitReport(count, typeLotto, resultLimit):
+    limit = 0
+    if count == "2 ตัว":
+        if typeLotto == 'บน':
+            limit = resultLimit[0]['twoTop']
+        elif typeLotto == 'ล่าง':
+            limit = resultLimit[0]['twoButtom']
+    elif count == "3 ตัว":
+        if typeLotto == 'บน':
+            limit = resultLimit[0]['threeTop']
+        elif typeLotto == 'โต๊ด':
+            limit = resultLimit[0]['threeTod']
+        elif typeLotto == 'ล่าง':
+            limit = resultLimit[0]['threeButtom']
+    return limit
