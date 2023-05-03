@@ -1,221 +1,639 @@
 {
-	"info": {
-		"_postman_id": "6b33494a-e136-44ba-b017-cdf8c0da8a7c",
-		"name": "lottery",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "10795139"
-	},
-	"item": [
-		{
-			"name": "local",
-			"item": [
-				{
-					"name": "ลอยแพ",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\" : [1,2,3,4,5]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:5000/combinations",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "5000",
-							"path": [
-								"combinations"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": "3",
-									"disabled": true
-								},
-								{
-									"key": "name",
-									"value": "4",
-									"disabled": true
-								},
-								{
-									"key": "name",
-									"value": "5",
-									"disabled": true
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "ยำ",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "http://127.0.0.1:5000/api/permutations",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "5000",
-							"path": [
-								"api",
-								"permutations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "19ประตู",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\" : [5]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:5000/api/get_two_digits",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "5000",
-							"path": [
-								"api",
-								"get_two_digits"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "3กลับ/6กลับ",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\" : [543]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:5000/permute",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "5000",
-							"path": [
-								"permute"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "คู่โต๊ด",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\" : [2,5]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:5000/api/get_three_digits",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "5000",
-							"path": [
-								"api",
-								"get_three_digits"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "create-lottery",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n      \"id\": \"1\",\n      \"customerName\": \"komsak\",\n      \"customerID\" : \"A12\",\n      \"lottery\": \"123\",\n      \"top\": \"0\",\n      \"tod\": \"0\",\n      \"buttom\": \"0\",\n      \"type\": \" 3 กลับ\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:5000/api/create-lottery",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "5000",
-							"path": [
-								"api",
-								"create-lottery"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "production",
-			"item": []
-		}
-	]
+  "info": {
+    "_postman_id": "c596d0a1-c315-42ac-bc0b-1bab387f141c",
+    "name": "lottery",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "10795139"
+  },
+  "item": [
+    {
+      "name": "local",
+      "item": [
+        {
+          "name": "ลอยแพ",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\" : [1,2,3,4]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/combinations",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["combinations"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "3",
+                  "disabled": true
+                },
+                {
+                  "key": "name",
+                  "value": "4",
+                  "disabled": true
+                },
+                {
+                  "key": "name",
+                  "value": "5",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ยำ",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\" : [1,2,3,4,5]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/permutations",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "permutations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "19ประตู",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\" : [5]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get_two_digits",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get_two_digits"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3กลับ/6กลับ",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\" : [5,4,3]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/permute",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["permute"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "คู่โต๊ด",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\" : [2,1]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get_three_digits",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get_three_digits"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create-lottery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n      \"customerName\": \"komsak\",\n      \"customerID\" : \"A12\", \n      \"lottery\": \"12\",\n      \"top\": 1000,\n      \"tod\": 0 ,\n      \"buttom\": 0,\n      \"type\": \"2 ตัว\",\n      \"createdBy\" :  \"com1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/create-lottery",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "create-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete-lottery-all",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/delete-lottery-all",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "delete-lottery-all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-lottery",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get-lottery?createdBy=com1",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get-lottery"],
+              "query": [
+                {
+                  "key": "createdBy",
+                  "value": "com1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete-lotterty-select",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\" : [\"6436c0050c06a22714adf3e0\",\"6436c0050c06a22714adf3e1\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/delete-lottery",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "delete-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "edit-lottery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"buttom\": 10,\n    \"customerName\": \"komsak\",\n    \"id\": \"6437d22cd779cc72e5950cf9\",\n    \"lottery\": \"123\",\n    \"tod\": 10,\n    \"top\": 10,\n    \"type\": \"ลอยแพ\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/edit-lottery",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "edit-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create-upsert-customer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n      \"customerName\": \"mock1\",\n      \"customerID\" : \"A02\",\n      \"createdBy\" : \"komsak\",\n      \"threeTopPrice\": 3,\n      \"threeTopPercent\": 30,\n      \"threeTodPrice\": 30,\n      \"threeTodPercent\":30,\n      \"threeButtomPrice\" :30,\n      \"threeButtomPercent\" :20,\n      \"twoTopPrice\":20,\n      \"twoTopPercent\":20,\n      \"twoButtomPrice\":20,\n      \"twoButtomPercent\":20,\n      \"oneTopPrice\":1,\n      \"oneTopPercent\":20,\n      \"oneButtomPrice\":20,\n      \"oneButtomPercent\":20,\n      \"coupleTodPrice\":20,\n      \"coupleTodPercent\":20,\n      \"loypaePrice\":20,\n      \"loypaePercent\":20,\n      \"yumPrice\":20,\n      \"yumPercent\":20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/create-upsert-customer",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "create-upsert-customer"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-list-customer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get-list-customer",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get-list-customer"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete-customer-all",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/delete-customer-all",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "delete-customer-all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete-customer-select",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/delete-customer",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "delete-customer"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create-limit-lottery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"threeTop\" : 40,\n    \"threeTod\":20,\n    \"threeButtom\" :20,\n    \"twoTop\" : 20,\n    \"twoButtom\" : 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/create-limit-lottery",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "create-limit-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-limit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get-limit",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get-limit"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get-report?count=3 ตัว&type=บน&sortByLottery=false&dateLottery=Wed, 20 Apr 2023 00:00:00 GMT&overLottery=true",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get-report"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "3 ตัว"
+                },
+                {
+                  "key": "type",
+                  "value": "บน"
+                },
+                {
+                  "key": "sortByLottery",
+                  "value": "false"
+                },
+                {
+                  "key": "dateLottery",
+                  "value": "Wed, 20 Apr 2023 00:00:00 GMT"
+                },
+                {
+                  "key": "overLottery",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create-result-lottery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"threeTop\" : 40,\n    \"threeButtom_1\":30,\n    \"threeButtom_2\" :40,\n    \"threeButtom_3\" : 20,\n    \"threeButtom_4\" : 20,\n    \"twoTop\" : 20,\n    \"twoButtom\" : 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/create-result-lottery",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "create-result-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-result-lotterty",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get-result-lottery",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get-result-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-date-lottery",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/get-date-lottery",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "get-date-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "download-report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/download-report?count=2 ตัว&type=บน&sortByLottery=false&dateLottery=Wed, 20 Apr 2023 00:00:00 GMT&overLottery=false",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "download-report"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "2 ตัว"
+                },
+                {
+                  "key": "type",
+                  "value": "บน"
+                },
+                {
+                  "key": "sortByLottery",
+                  "value": "false"
+                },
+                {
+                  "key": "dateLottery",
+                  "value": "Wed, 20 Apr 2023 00:00:00 GMT"
+                },
+                {
+                  "key": "overLottery",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "download-result",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:5000/api/download-result",
+              "protocol": "http",
+              "host": ["127", "0", "0", "1"],
+              "port": "5000",
+              "path": ["api", "download-result"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "production",
+      "item": [
+        {
+          "name": "create-lottery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n      \"customerName\": \"komsak\",\n      \"customerID\" : \"A12\",\n      \"lottery\": \"12345\",\n      \"top\": 200,\n      \"tod\": 0 ,\n      \"buttom\": 0,\n      \"type\": \"19 ประตู\",\n      \"id\" : \"123456\",\n       \"createdBy\" :  \"com1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://lottery-ooyw.onrender.com/api/create-lottery",
+              "protocol": "https",
+              "host": ["lottery-ooyw", "onrender", "com"],
+              "path": ["api", "create-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-lottery",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://lottery-ooyw.onrender.com/api/get-lottery?createdBy=com1",
+              "protocol": "https",
+              "host": ["lottery-ooyw", "onrender", "com"],
+              "path": ["api", "get-lottery"],
+              "query": [
+                {
+                  "key": "createdBy",
+                  "value": "com1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete-lottery-select",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\" : [\"6436c0050c06a22714adf3e0\",\"6436c0050c06a22714adf3e1\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://lottery-ooyw.onrender.com/api/delete-lottery",
+              "protocol": "https",
+              "host": ["lottery-ooyw", "onrender", "com"],
+              "path": ["api", "delete-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-date-lottery",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://lottery-ooyw.onrender.com/api/get-date-lottery",
+              "protocol": "https",
+              "host": ["lottery-ooyw", "onrender", "com"],
+              "path": ["api", "get-date-lottery"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "download-report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://lottery-ooyw.onrender.com/api/download-report?count=3 ตัว&type=บน&sortByLottery=false&dateLottery=Wed, 20 Apr 2023 00:00:00 GMT&overLottery=false",
+              "protocol": "https",
+              "host": ["lottery-ooyw", "onrender", "com"],
+              "path": ["api", "download-report"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "3 ตัว"
+                },
+                {
+                  "key": "type",
+                  "value": "บน"
+                },
+                {
+                  "key": "sortByLottery",
+                  "value": "false"
+                },
+                {
+                  "key": "dateLottery",
+                  "value": "Wed, 20 Apr 2023 00:00:00 GMT"
+                },
+                {
+                  "key": "overLottery",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
 }
