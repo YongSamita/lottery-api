@@ -466,87 +466,96 @@ def download_report():
 
 @ app.route('/api/download-result', methods=['GET'])
 def download_result():
-    resultLottery = list(result_lottery_DB.find())
-    resultLottery = pd.DataFrame(resultLottery)
-    customer = list(customerDB.find())
-    customer = pd.DataFrame(customer)
-    lottery = list(lotteryDB.find())
-    lottery = pd.DataFrame(lottery)
-    mergeLot = pd.merge(lottery, customer, on='customerName', how='left')
-    mergeLot['WinthreetopP'] = mergeLot['top']*mergeLot['threeTopPrice']
-    mergeLot['WinthreetodP'] = mergeLot['tod']*mergeLot['threeTodPrice']
-    mergeLot['WinthreebuttomP'] = mergeLot['buttom'] * \
-        mergeLot['threeButtomPrice']
-    mergeLot['WintwotopP'] = mergeLot['top']*mergeLot['twoTopPrice']
-    mergeLot['WintwobuttomP'] = mergeLot['top']*mergeLot['twoTopPrice']
-    resultThreeTop = resultLottery.threeTop[0]
-    resultThreeTop = str(resultThreeTop)
-    resultThreeTop = resultThreeTop[0] + resultThreeTop[1] + resultThreeTop[2]
-    winThreeTod = list(permutations(resultThreeTop))
-    winThreeTod = set(winThreeTod)
-    winThreeTod = ["".join(t) for t in winThreeTod]
-    winThreeTod = mergeLot[(mergeLot['lottery'].isin(
-        winThreeTod)) & (mergeLot['tod'] != 0)]
-    winThreeTod = winThreeTod.replace({'type': {'3 ตัว': '3 ตัวโต๊ด'}})
-    groupByWinThreeTod = winThreeTod.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WinthreetodP']].apply(
-        lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WinthreetodP': 'ราคาจ่าย'})).reset_index(drop=True)
-    resultTopThree = resultLottery.threeTop[0]
-    winTopThree = mergeLot[(mergeLot['lottery'] == str(
-        resultTopThree)) & (mergeLot['top'] != 0)]
-    winTopThree = winTopThree.replace({'type': {'3 ตัว': '3 ตัวบน'}})
-    groupByWinTopThree = winTopThree.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinthreetopP']].apply(
-        lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinthreetopP': 'ราคาจ่าย'})).reset_index(drop=True)
-    winThreeButtom_1 = resultLottery.threeButtom_1[0]
-    winThreeButtom_2 = resultLottery.threeButtom_2[0]
-    winThreeButtom_3 = resultLottery.threeButtom_3[0]
-    winThreeButtom_4 = resultLottery.threeButtom_4[0]
-    winThreeButtom = mergeLot[((mergeLot['lottery'] == str(winThreeButtom_1)) | (mergeLot['lottery'] == str(winThreeButtom_2)) | (
-        mergeLot['lottery'] == str(winThreeButtom_3)) | (mergeLot['lottery'] == str(winThreeButtom_4))) & (mergeLot['buttom'] != 0)]
-    winThreeButtom = winThreeButtom.replace({'type': {'3 ตัว': '3 ตัวล่าง'}})
-    groupByWinThreeButtom = winThreeButtom.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinthreebuttomP']].apply(
-        lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinthreebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
-    winThreeTop = resultLottery.threeTop[0]
-    winTopTwo = mergeLot[(mergeLot['lottery'] == str(
-        winThreeTop)[1:]) & (mergeLot['top'] != 0)]
-    winTopTwo = winTopTwo.replace({'type': {'2 ตัว': '2 ตัวบน'}})
-    groupBywinTopTwo = winTopTwo.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WintwotopP']].apply(
-        lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WintwotopP': 'ราคาจ่าย'})).reset_index(drop=True)
-    winTwoButtom = resultLottery.twoButtom[0]
-    winTwoButtom = mergeLot[(mergeLot['lottery'] == str(
-        winTwoButtom)) & (mergeLot['buttom'] != 0)]
-    winTwoButtom = winTwoButtom.replace({'type': {'2 ตัว': '2 ตัวล่าง'}})
-    groupBywinTwoButtom = winTwoButtom.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WintwobuttomP']].apply(
-        lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WintwobuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
-    concatenated = pd.concat([groupByWinTopThree, groupByWinThreeTod,
-                             groupByWinThreeButtom, groupBywinTopTwo, groupBywinTwoButtom])
-    groupbycustomerName = concatenated.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[
-        ['customerName', '_id_x', 'lottery', 'type', 'ราคาซื้อ', 'ราคาจ่าย']].apply(lambda group: group.rename(columns={'type': 'หมายเหตุ'})).reset_index(drop=True)
-    sumlot = lottery.replace(
-        {'type': {'19 ประตู': '2 ตัว', '3 กลับ': '3 ตัว', '6 กลับ': '3 ตัว'}})
-    sumlot['sum'] = sumlot['top'] + sumlot['tod'] + sumlot['buttom']
-    pv_lot = pd.pivot_table(sumlot, values='sum', index=[
-                            'customerID', 'customerName', 'type'], aggfunc=np.sum)
-    pv_lot = pd.DataFrame(pv_lot.to_records())
-    pv_lot.fillna(0, inplace=True)
-    pc = pd.DataFrame(customer)
-    pc['3 ตัว'] = pc['threeTopPercent']
-    pc['2 ตัว'] = pc['twoTopPercent']
-    pc['วิ่ง'] = pc['oneTopPercent']
-    pc['คู่โต๊ด'] = pc['coupleTodPercent']
-    pc['ลอยแพ'] = pc['loypaePercent']
-    pc['ยำ'] = pc['yumPercent']
-    new_pc = pd.melt(pc, id_vars=['customerID', 'customerName'], value_vars=[
-                     '2 ตัว', '3 ตัว', 'คู่โต๊ด', 'ยำ', 'ลอยแพ', 'วิ่ง'], var_name='type', value_name='percen')
-    merge_pc = pd.merge(new_pc, pv_lot, on=[
-                        'customerID', 'customerName', 'type'], how='outer')
-    merge_pc.fillna(0, inplace=True)
-    merge_pc = pd.pivot_table(merge_pc, values=['sum', 'percen'], index=[
-                              'customerID', 'customerName', 'type'], aggfunc=np.sum)
-    merge_pc = pd.DataFrame(merge_pc.to_records())
-    merge_pc['หัก'] = merge_pc['sum']*merge_pc['percen']/100
-    merge_pc['คงเหลือ'] = merge_pc['sum']-merge_pc['หัก']
-    summarize = pd.pivot_table(merge_pc, values=['sum', 'หัก', 'คงเหลือ'], index=[
-                               'customerID', 'customerName'], aggfunc=np.sum)
+    try:
+        resultLottery = list(result_lottery_DB.find())
+        resultLottery = pd.DataFrame(resultLottery)
+        customer = list(customerDB.find())
+        customer = pd.DataFrame(customer)
+        lottery = list(lotteryDB.find())
+        lottery = pd.DataFrame(lottery)
+        mergeLot = pd.merge(lottery, customer, on='customerName', how='left')
+        mergeLot['WinthreetopP'] = mergeLot['top']*mergeLot['threeTopPrice']
+        mergeLot['WinthreetodP'] = mergeLot['tod']*mergeLot['threeTodPrice']
+        mergeLot['WinthreebuttomP'] = mergeLot['buttom'] * \
+            mergeLot['threeButtomPrice']
+        mergeLot['WintwotopP'] = mergeLot['top']*mergeLot['twoTopPrice']
+        mergeLot['WintwobuttomP'] = mergeLot['top']*mergeLot['twoTopPrice']
+        resultThreeTop = resultLottery.threeTop[0]
+        resultThreeTop = str(resultThreeTop)
+        resultThreeTop = resultThreeTop[0] + \
+            resultThreeTop[1] + resultThreeTop[2]
+        winThreeTod = list(permutations(resultThreeTop))
+        winThreeTod = set(winThreeTod)
+        winThreeTod = ["".join(t) for t in winThreeTod]
+        winThreeTod = mergeLot[(mergeLot['lottery'].isin(
+            winThreeTod)) & (mergeLot['tod'] != 0)]
+        winThreeTod = winThreeTod.replace({'type': {'3 ตัว': '3 ตัวโต๊ด'}})
+        groupByWinThreeTod = winThreeTod.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WinthreetodP']].apply(
+            lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WinthreetodP': 'ราคาจ่าย'})).reset_index(drop=True)
+        resultTopThree = resultLottery.threeTop[0]
+        winTopThree = mergeLot[(mergeLot['lottery'] == str(
+            resultTopThree)) & (mergeLot['top'] != 0)]
+        winTopThree = winTopThree.replace({'type': {'3 ตัว': '3 ตัวบน'}})
+        groupByWinTopThree = winTopThree.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinthreetopP']].apply(
+            lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinthreetopP': 'ราคาจ่าย'})).reset_index(drop=True)
+        winThreeButtom_1 = resultLottery.threeButtom_1[0]
+        winThreeButtom_2 = resultLottery.threeButtom_2[0]
+        winThreeButtom_3 = resultLottery.threeButtom_3[0]
+        winThreeButtom_4 = resultLottery.threeButtom_4[0]
+        winThreeButtom = mergeLot[((mergeLot['lottery'] == str(winThreeButtom_1)) | (mergeLot['lottery'] == str(winThreeButtom_2)) | (
+            mergeLot['lottery'] == str(winThreeButtom_3)) | (mergeLot['lottery'] == str(winThreeButtom_4))) & (mergeLot['buttom'] != 0)]
+        winThreeButtom = winThreeButtom.replace(
+            {'type': {'3 ตัว': '3 ตัวล่าง'}})
+        groupByWinThreeButtom = winThreeButtom.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinthreebuttomP']].apply(
+            lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinthreebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
+        winThreeTop = resultLottery.threeTop[0]
+        winTopTwo = mergeLot[(mergeLot['lottery'] == str(
+            winThreeTop)[1:]) & (mergeLot['top'] != 0)]
+        winTopTwo = winTopTwo.replace({'type': {'2 ตัว': '2 ตัวบน'}})
+        groupBywinTopTwo = winTopTwo.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WintwotopP']].apply(
+            lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WintwotopP': 'ราคาจ่าย'})).reset_index(drop=True)
+        winTwoButtom = resultLottery.twoButtom[0]
+        winTwoButtom = mergeLot[(mergeLot['lottery'] == str(
+            winTwoButtom)) & (mergeLot['buttom'] != 0)]
+        winTwoButtom = winTwoButtom.replace({'type': {'2 ตัว': '2 ตัวล่าง'}})
+        groupBywinTwoButtom = winTwoButtom.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WintwobuttomP']].apply(
+            lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WintwobuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
+        concatenated = pd.concat([groupByWinTopThree, groupByWinThreeTod,
+                                  groupByWinThreeButtom, groupBywinTopTwo, groupBywinTwoButtom])
+        groupbycustomerName = concatenated.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[
+            ['customerName', '_id_x', 'lottery', 'type', 'ราคาซื้อ', 'ราคาจ่าย']].apply(lambda group: group.rename(columns={'type': 'หมายเหตุ'})).reset_index(drop=True)
+        sumlot = lottery.replace(
+            {'type': {'19 ประตู': '2 ตัว', '3 กลับ': '3 ตัว', '6 กลับ': '3 ตัว'}})
+        sumlot['sum'] = sumlot['top'] + sumlot['tod'] + sumlot['buttom']
+        pv_lot = pd.pivot_table(sumlot, values='sum', index=[
+                                'customerID', 'customerName', 'type'], aggfunc=np.sum)
+        pv_lot = pd.DataFrame(pv_lot.to_records())
+        pv_lot.fillna(0, inplace=True)
+        pc = pd.DataFrame(customer)
+        pc['3 ตัว'] = pc['threeTopPercent']
+        pc['2 ตัว'] = pc['twoTopPercent']
+        pc['วิ่ง'] = pc['oneTopPercent']
+        pc['คู่โต๊ด'] = pc['coupleTodPercent']
+        pc['ลอยแพ'] = pc['loypaePercent']
+        pc['ยำ'] = pc['yumPercent']
+        new_pc = pd.melt(pc, id_vars=['customerID', 'customerName'], value_vars=[
+            '2 ตัว', '3 ตัว', 'คู่โต๊ด', 'ยำ', 'ลอยแพ', 'วิ่ง'], var_name='type', value_name='percen')
+        merge_pc = pd.merge(new_pc, pv_lot, on=[
+                            'customerID', 'customerName', 'type'], how='outer')
+        merge_pc.fillna(0, inplace=True)
+        merge_pc = pd.pivot_table(merge_pc, values=['sum', 'percen'], index=[
+            'customerID', 'customerName', 'type'], aggfunc=np.sum)
+        merge_pc = pd.DataFrame(merge_pc.to_records())
+        merge_pc['หัก'] = merge_pc['sum']*merge_pc['percen']/100
+        merge_pc['คงเหลือ'] = merge_pc['sum']-merge_pc['หัก']
+        summarize = pd.pivot_table(merge_pc, values=['sum', 'หัก', 'คงเหลือ'], index=[
+            'customerID', 'customerName'], aggfunc=np.sum)
+        print(summarize)
+        resp = jsonify({"data": '', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
 
 
 if __name__ == '__main__':
