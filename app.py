@@ -10,6 +10,7 @@ from fpdf import FPDF
 from util.report import handleGetLimitReport, handleGetPipelineReport, handleMappingResponseData
 import pandas as pd
 import numpy as np
+import pytz
 
 
 app = Flask(__name__)
@@ -23,6 +24,7 @@ lotteryDB = db['lottery']
 customerDB = db['customer']
 limitDB = db['limit']
 result_lottery_DB = db['result_lottery']
+tz = pytz.timezone('Asia/Bangkok')
 
 
 @app.route('/api/create-lottery', methods=['POST'])
@@ -42,7 +44,7 @@ def create_lottery():
         elif req['type'] == 'ยำ':
             result = handleCreateYums(req)
         else:
-            req['createdAt'] = datetime.now()
+            req['createdAt'] = datetime.now(tz=tz)
             result.append(req)
         lotteryDB.insert_many(result)
         for document in result:
