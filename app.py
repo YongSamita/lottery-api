@@ -1,5 +1,5 @@
 from flask import Flask, make_response, request, jsonify
-from itertools import combinations, permutations
+from itertools import permutations
 from pymongo import MongoClient
 import pymongo
 from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
@@ -23,25 +23,6 @@ lotteryDB = db['lottery']
 customerDB = db['customer']
 limitDB = db['limit']
 result_lottery_DB = db['result_lottery']
-
-
-@app.route('/api/result-lottery', methods=['GET'])
-def result_lottery():
-    # ใช้ aggregation pipeline เพื่อหาผลรวมของ top, tod และ bottom ของเลขหวยเดียวกัน
-    result = lotteryDB.aggregate([
-        {"$group": {
-            "_id": "$lottery_number",
-            "total_top": {"$sum": {"$toInt": "$top"}},
-            "total_tod": {"$sum": {"$toInt": "$tod"}},
-            "total_bottom": {"$sum": {"$sum": {"$map": {"input": "$bottom", "in": {"$toInt": "$$this"}}}}}
-        }}
-    ])
-
-    # พิมพ์ผลลัพธ์
-    for doc in result:
-        print(doc)
-
-    return result
 
 
 @app.route('/api/create-lottery', methods=['POST'])
@@ -103,6 +84,23 @@ def delete_lottery():
         for item in req['id']:
             lotteryDB.delete_one({'_id': ObjectId(item)})
         resp = jsonify({"data": 'delete success', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/delete-lottery-by-date', methods=['POST'])
+def delete_lottery_by_date():
+    try:
+        dateLottery = request.args.get('dateLottery')
+        print('/api/delete-lottery-by-date req:', dateLottery)
+        start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_date = start_date.replace(hour=23, minute=59, second=59)
+        lotteryDB.delete_many(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}})
+        resp = jsonify(
+            {"data": 'delete lottery by date success', "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -473,6 +471,7 @@ def download_result():
         customer = pd.DataFrame(customer)
         lottery = list(lotteryDB.find())
         lottery = pd.DataFrame(lottery)
+
         mergeLot = pd.merge(lottery, customer, on='customerName', how='left')
         mergeLot['WinthreetopP'] = mergeLot['top']*mergeLot['threeTopPrice']
         mergeLot['WinthreetodP'] = mergeLot['tod']*mergeLot['threeTodPrice']
@@ -480,6 +479,7 @@ def download_result():
             mergeLot['threeButtomPrice']
         mergeLot['WintwotopP'] = mergeLot['top']*mergeLot['twoTopPrice']
         mergeLot['WintwobuttomP'] = mergeLot['top']*mergeLot['twoTopPrice']
+
         resultThreeTop = resultLottery.threeTop[0]
         resultThreeTop = str(resultThreeTop)
         resultThreeTop = resultThreeTop[0] + \
