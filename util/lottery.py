@@ -20,7 +20,6 @@ def handleCreateThreeSixSwitch(data):
     for item in result_list:
         if len(result_list) == 6:
             json_list.append({
-
                 "customerName": data['customerName'],
                 "customerID": data['customerID'],
                 "lottery": item,
@@ -33,7 +32,6 @@ def handleCreateThreeSixSwitch(data):
             })
         else:
             json_list.append({
-
                 "customerName": data['customerName'],
                 "customerID": data['customerID'],
                 "lottery": item,
@@ -61,7 +59,6 @@ def handleCreateNineteen(data):
     unique_result.sort()
     for item in unique_result:
         json_list.append({
-
             "customerName": data['customerName'],
             "customerID": data['customerID'],
             "lottery": item,
@@ -72,7 +69,6 @@ def handleCreateNineteen(data):
             "createdBy": data['createdBy'],
             "createdAt":  datetime.now(tz=tz)
         })
-
     return json_list
 
 

@@ -469,7 +469,8 @@ def download_result():
     try:
         resultLottery = list(result_lottery_DB.find())
         resultLottery = pd.DataFrame(resultLottery)
-        customer = list(customerDB.find())
+        customer = list(customerDB.find().sort(
+            "customerName", pymongo.ASCENDING))
         customer = pd.DataFrame(customer)
         lottery = list(lotteryDB.find())
         lottery = pd.DataFrame(lottery)
@@ -524,8 +525,11 @@ def download_result():
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WintwobuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
         concatenated = pd.concat([groupByWinTopThree, groupByWinThreeTod,
                                   groupByWinThreeButtom, groupBywinTopTwo, groupBywinTwoButtom])
+
         groupbycustomerName = concatenated.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[
             ['customerName', '_id_x', 'lottery', 'type', 'ราคาซื้อ', 'ราคาจ่าย']].apply(lambda group: group.rename(columns={'type': 'หมายเหตุ'})).reset_index(drop=True)
+        sum_buy = concatenated.groupby(['customerName'])['ราคาจ่าย'].sum()
+        sum_buy = sum_buy.reset_index()
         sumlot = lottery.replace(
             {'type': {'19 ประตู': '2 ตัว', '3 กลับ': '3 ตัว', '6 กลับ': '3 ตัว'}})
         sumlot['sum'] = sumlot['top'] + sumlot['tod'] + sumlot['buttom']
@@ -552,8 +556,114 @@ def download_result():
         merge_pc['คงเหลือ'] = merge_pc['sum']-merge_pc['หัก']
         summarize = pd.pivot_table(merge_pc, values=['sum', 'หัก', 'คงเหลือ'], index=[
             'customerID', 'customerName'], aggfunc=np.sum)
-        print(summarize)
-        resp = jsonify({"data": '', "status": 200})
+        summarize = pd.DataFrame(summarize.to_records())
+        summarize = pd.merge(summarize, sum_buy, on=[
+                             'customerName'], how='outer')
+        summarize.fillna(0, inplace=True)
+        summarize['จ่าย'] = summarize['คงเหลือ'] - summarize['ราคาจ่าย']
+
+        header = ['ตัวเลข', 'ซื้อ', 'จำนวนเงิน', 'หมายเหตุ']
+        header2 = ['', 'ยอดซื้อ', 'เปอร์เซ็น', 'คิดเป็นยอดหัก', 'คิดเป็นเงิน']
+        pdf = FPDF()
+        pdf.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
+        customer = pd.merge(customer, summarize, on=[
+                            'customerName'], how='outer')
+        customer = customer.loc[customer['sum'] != 0]
+
+        for indexCust, rowCust in customer.iterrows():
+            countRow = 0
+            for indexGroupby,  rowGroupby in groupbycustomerName.iterrows():
+                if (rowGroupby['customerName'] == rowCust['customerName']):
+                    if indexGroupby == 0 or countRow % 15 == 0:
+                        pdf.add_page()
+                        pdf.set_font('DB-Heavent', '', 16)
+                        pdf.set_xy(20, 10)
+                        pdf.cell(10, 20, 'ชื่อลูกค้า : ' +
+                                 rowGroupby['customerName'])
+                        pdf.ln()
+                        pdf.set_x(20)
+                        for j in range(len(header)):
+                            pdf.cell(40, 10, header[j], border=1,)
+                    pdf.ln()
+                    pdf.set_x(20)
+                    pdf.cell(40, 10, str(rowGroupby['lottery']), border=1)
+                    pdf.cell(40, 10, str(rowGroupby['ราคาซื้อ']), border=1)
+                    pdf.cell(40, 10, str(rowGroupby['ราคาจ่าย']), border=1)
+                    pdf.cell(40, 10, rowGroupby['หมายเหตุ'], border=1)
+                    countRow = countRow+1
+            n = 0
+            for indexGroupby,  rowGroupby in merge_pc.iterrows():
+                if (rowGroupby['customerName'] == rowCust['customerName']):
+                    if countRow % 15 == 0:
+                        pdf.add_page()
+                        pdf.set_font('DB-Heavent', '', 16)
+                        pdf.set_xy(20, 10)
+                        pdf.cell(10, 20, 'ชื่อลูกค้า : ' +
+                                 rowGroupby['customerName'])
+                        pdf.ln()
+                        pdf.set_x(20)
+                        for j in range(len(header2)):
+                            pdf.cell(40, 10, header2[j], border=1)
+                    if n == 0:
+                        pdf.ln()
+                        pdf.ln()
+                        pdf.set_x(20)
+                        for j in range(len(header2)):
+                            pdf.cell(30, 10, header2[j])
+                    pdf.ln()
+                    pdf.set_x(20)
+                    pdf.cell(30, 10, str(rowGroupby['type']))
+                    pdf.cell(30, 10, str(rowGroupby['sum']))
+                    pdf.cell(30, 10, str(rowGroupby['percen']))
+                    pdf.cell(30, 10, str(rowGroupby['หัก']))
+                    pdf.cell(30, 10, str(rowGroupby['คงเหลือ']))
+                    countRow = countRow+1
+                    n = n+1
+
+            for indexGroupby,  rowGroupby in summarize.iterrows():
+                if (rowGroupby['customerName'] == rowCust['customerName']):
+                    if countRow % 15 == 0:
+                        pdf.add_page()
+                        pdf.set_font('DB-Heavent', '', 16)
+                        pdf.set_xy(20, 10)
+                        pdf.cell(10, 20, 'ชื่อลูกค้า : ' +
+                                 rowGroupby['customerName'])
+                        pdf.ln()
+                        pdf.set_x(20)
+                        for j in range(len(header2)):
+                            pdf.cell(40, 10, header2[j], border=1)
+                    if n == 0:
+                        pdf.ln()
+                        pdf.ln()
+                        pdf.set_x(20)
+                        for j in range(len(header2)):
+                            pdf.cell(30, 10, header2[j])
+                    pdf.ln()
+                    pdf.cell(
+                        20, 10, '---------------------------------------------------------------------------------------------------------')
+                    pdf.ln()
+                    pdf.set_x(20)
+                    pdf.cell(20, 10, 'สรุป')
+                    pdf.cell(40, 10, 'ยอดซื้อ : ' +
+                             str(round(rowGroupby['sum'], 1)))
+                    pdf.cell(40, 10, 'ยอดหัก : ' +
+                             str(round(rowGroupby['หัก'], 1)))
+                    pdf.cell(40, 10, 'ยอดคงเหลือ : ' +
+                             str(round(rowGroupby['คงเหลือ'], 1)))
+                    pdf.ln()
+                    pdf.set_x(40)
+                    pdf.cell(40, 10, 'ยอดถูก : ' +
+                             str(round(rowGroupby['ราคาจ่าย'], 1)))
+                    pdf.cell(40, 10, 'ยอดจ่าย : ' +
+                             str(round(rowGroupby['จ่าย'], 1)))
+                    pdf.ln()
+                    countRow = countRow+1
+                    n = n+1
+        pdf_content = pdf.output(dest='S').encode('latin-1')
+        resp = make_response(pdf_content)
+        resp.headers['Content-Type'] = 'application/pdf'
+        resp.headers['Content-Disposition'] = 'attachment; filename=report.pdf'
+
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
