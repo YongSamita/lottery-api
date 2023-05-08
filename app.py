@@ -594,7 +594,7 @@ def download_result():
             n = 0
             for indexGroupby,  rowGroupby in merge_pc.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if countRow % 15 == 0:
+                    if countRow % 15 == 0 and n != 0:
                         pdf.add_page()
                         pdf.set_font('DB-Heavent', '', 16)
                         pdf.set_xy(20, 10)
@@ -603,8 +603,9 @@ def download_result():
                         pdf.ln()
                         pdf.set_x(20)
                         for j in range(len(header2)):
-                            pdf.cell(40, 10, header2[j], border=1)
-                    if n == 0:
+                            pdf.cell(30, 10, header2[j])
+                        countRow = countRow+1
+                    if (n == 0):
                         pdf.ln()
                         pdf.ln()
                         pdf.set_x(20)
@@ -629,15 +630,6 @@ def download_result():
                         pdf.cell(10, 20, 'ชื่อลูกค้า : ' +
                                  rowGroupby['customerName'])
                         pdf.ln()
-                        pdf.set_x(20)
-                        for j in range(len(header2)):
-                            pdf.cell(40, 10, header2[j], border=1)
-                    if n == 0:
-                        pdf.ln()
-                        pdf.ln()
-                        pdf.set_x(20)
-                        for j in range(len(header2)):
-                            pdf.cell(30, 10, header2[j])
                     pdf.ln()
                     pdf.cell(
                         20, 10, '---------------------------------------------------------------------------------------------------------')
