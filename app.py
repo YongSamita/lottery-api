@@ -5,7 +5,7 @@ import pymongo
 from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
 from bson import ObjectId
 from flask_cors import CORS
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from fpdf import FPDF
 from util.report import handleGetLimitReport, handleGetPipelineReport, handleMappingResponseData
 import pandas as pd
@@ -64,9 +64,14 @@ def get_lottery():
     try:
         req = request.args.get('createdBy')
         print('/api/get-lottery req:', req)
+        current_date = datetime.today()
+        current_start_of_day = datetime.combine(current_date, time.min)
+        future_date = current_date + timedelta(days=5)
+        future_start_of_day = datetime.combine(future_date, time.min)
         projection = {'buttom': 1,
                       'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
-        result = list(lotteryDB.find({"createdBy": req}, projection).sort(
+        result = list(lotteryDB.find({"createdBy": req,
+                                      "createdAt": {"$gte": current_start_of_day, "$lt": future_start_of_day}}, projection).sort(
             'createdAt', pymongo.ASCENDING))
         for document in result:
             document['id'] = str(document['_id'])
