@@ -404,7 +404,7 @@ def download_report():
         page_count = 1
         if len(resultMapping) > 0:
             for i, doc in enumerate(resultMapping):
-                if i == 0 or i % 15 == 0:
+                if i == 0 or i % 25 == 0:
                     pdf.add_page()
                     pdf.set_font('DB-Heavent', '', 16)
                     pdf.set_xy(20, 20)
@@ -467,12 +467,17 @@ def download_report():
 @ app.route('/api/download-result', methods=['GET'])
 def download_result():
     try:
+        dateLottery = request.args.get('dateLottery')
+        print('/api/download-result req:', dateLottery)
+        start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_date = start_date.replace(hour=23, minute=59, second=59)
         resultLottery = list(result_lottery_DB.find())
         resultLottery = pd.DataFrame(resultLottery)
         customer = list(customerDB.find().sort(
             "customerName", pymongo.ASCENDING))
         customer = pd.DataFrame(customer)
-        lottery = list(lotteryDB.find())
+        lottery = list(lotteryDB.find(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         lottery = pd.DataFrame(lottery)
 
         mergeLot = pd.merge(lottery, customer, on='customerName', how='left')
@@ -482,6 +487,9 @@ def download_result():
             mergeLot['threeButtomPrice']
         mergeLot['WintwotopP'] = mergeLot['top']*mergeLot['twoTopPrice']
         mergeLot['WintwobuttomP'] = mergeLot['top']*mergeLot['twoTopPrice']
+        mergeLot['WincoupletodP'] = mergeLot['tod']*mergeLot['coupleTodPrice']
+        mergeLot['WinloypaeP'] = mergeLot['tod']*mergeLot['loypaePrice']
+        mergeLot['WinyumP'] = mergeLot['top']*mergeLot['yumPrice']
 
         resultThreeTop = resultLottery.threeTop[0]
         resultThreeTop = str(resultThreeTop)
@@ -493,14 +501,32 @@ def download_result():
         winThreeTod = mergeLot[(mergeLot['lottery'].isin(
             winThreeTod)) & (mergeLot['tod'] != 0)]
         winThreeTod = winThreeTod.replace({'type': {'3 ตัว': '3 ตัวโต๊ด'}})
+        winloypae = winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ']
+        wincoupletod = winThreeTod.loc[winThreeTod['type'] == 'คู่โต๊ด']
+        winThreeTod = winThreeTod.loc[winThreeTod['type'] == '3 ตัวโต๊ด']
         groupByWinThreeTod = winThreeTod.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WinthreetodP']].apply(
             lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WinthreetodP': 'ราคาจ่าย'})).reset_index(drop=True)
+
+        groupByWincoupletod = wincoupletod.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WincoupletodP']].apply(
+            lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WincoupletodP': 'ราคาจ่าย'})).reset_index(drop=True)
+        groupByWincoupletod
+
+        groupByWinloypae = winloypae.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WinloypaeP']].apply(
+            lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WinloypaeP': 'ราคาจ่าย'})).reset_index(drop=True)
+
         resultTopThree = resultLottery.threeTop[0]
         winTopThree = mergeLot[(mergeLot['lottery'] == str(
             resultTopThree)) & (mergeLot['top'] != 0)]
         winTopThree = winTopThree.replace({'type': {'3 ตัว': '3 ตัวบน'}})
+        winYum = winTopThree.loc[winTopThree['type'] == 'ยำ']
+        winTopThree = winTopThree.loc[(winTopThree['type'] == '6 กลับ') | (
+            winTopThree['type'] == '3 กลับ') | (winTopThree['type'] == '3 ตัวบน')]
         groupByWinTopThree = winTopThree.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinthreetopP']].apply(
             lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinthreetopP': 'ราคาจ่าย'})).reset_index(drop=True)
+        groupByWinyumP = winYum.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinyumP']].apply(
+            lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinyumP': 'ราคาจ่าย'})).reset_index(drop=True)
+        groupByWinyumP
+
         winThreeButtom_1 = resultLottery.threeButtom_1[0]
         winThreeButtom_2 = resultLottery.threeButtom_2[0]
         winThreeButtom_3 = resultLottery.threeButtom_3[0]
@@ -511,6 +537,7 @@ def download_result():
             {'type': {'3 ตัว': '3 ตัวล่าง'}})
         groupByWinThreeButtom = winThreeButtom.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinthreebuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinthreebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
+
         winThreeTop = resultLottery.threeTop[0]
         winTopTwo = mergeLot[(mergeLot['lottery'] == str(
             winThreeTop)[1:]) & (mergeLot['top'] != 0)]
@@ -524,7 +551,7 @@ def download_result():
         groupBywinTwoButtom = winTwoButtom.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WintwobuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WintwobuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
         concatenated = pd.concat([groupByWinTopThree, groupByWinThreeTod,
-                                  groupByWinThreeButtom, groupBywinTopTwo, groupBywinTwoButtom])
+                                  groupByWinThreeButtom, groupBywinTopTwo, groupBywinTwoButtom, groupByWincoupletod, groupByWinloypae, groupByWinyumP])
 
         groupbycustomerName = concatenated.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[
             ['customerName', '_id_x', 'lottery', 'type', 'ราคาซื้อ', 'ราคาจ่าย']].apply(lambda group: group.rename(columns={'type': 'หมายเหตุ'})).reset_index(drop=True)
@@ -572,18 +599,23 @@ def download_result():
 
         for indexCust, rowCust in customer.iterrows():
             countRow = 0
+            page_count = 1
+            n = 0
             for indexGroupby,  rowGroupby in groupbycustomerName.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if indexGroupby == 0 or countRow % 15 == 0:
+                    if indexGroupby == 0 or countRow % 25 == 0:
                         pdf.add_page()
                         pdf.set_font('DB-Heavent', '', 16)
                         pdf.set_xy(20, 10)
-                        pdf.cell(10, 20, 'ชื่อลูกค้า : ' +
+                        pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
                                  rowGroupby['customerName'])
+                        pdf.cell(0, 20,
+                                 'แผ่นที่ ' + str(page_count))
                         pdf.ln()
                         pdf.set_x(20)
                         for j in range(len(header)):
                             pdf.cell(40, 10, header[j], border=1,)
+                        page_count = page_count+1
                     pdf.ln()
                     pdf.set_x(20)
                     pdf.cell(40, 10, str(rowGroupby['lottery']), border=1)
@@ -591,22 +623,23 @@ def download_result():
                     pdf.cell(40, 10, str(rowGroupby['ราคาจ่าย']), border=1)
                     pdf.cell(40, 10, rowGroupby['หมายเหตุ'], border=1)
                     countRow = countRow+1
-            n = 0
+
             for indexGroupby,  rowGroupby in merge_pc.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if countRow % 15 == 0 and n != 0:
+                    if countRow % 25 == 0:
                         pdf.add_page()
                         pdf.set_font('DB-Heavent', '', 16)
                         pdf.set_xy(20, 10)
-                        pdf.cell(10, 20, 'ชื่อลูกค้า : ' +
+                        pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
                                  rowGroupby['customerName'])
+                        pdf.cell(0, 20,
+                                 'แผ่นที่ ' + str(page_count))
                         pdf.ln()
                         pdf.set_x(20)
                         for j in range(len(header2)):
                             pdf.cell(30, 10, header2[j])
-                        countRow = countRow+1
+                        page_count = page_count+1
                     if (n == 0):
-                        pdf.ln()
                         pdf.ln()
                         pdf.set_x(20)
                         for j in range(len(header2)):
@@ -623,13 +656,15 @@ def download_result():
 
             for indexGroupby,  rowGroupby in summarize.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if countRow % 15 == 0:
+                    if countRow % 25 == 0:
                         pdf.add_page()
                         pdf.set_font('DB-Heavent', '', 16)
                         pdf.set_xy(20, 10)
-                        pdf.cell(10, 20, 'ชื่อลูกค้า : ' +
+                        pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
                                  rowGroupby['customerName'])
-                        pdf.ln()
+                        pdf.cell(0, 20,
+                                 'แผ่นที่ ' + str(page_count))
+                        page_count = page_count+1
                     pdf.ln()
                     pdf.cell(
                         20, 10, '---------------------------------------------------------------------------------------------------------')
