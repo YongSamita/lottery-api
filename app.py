@@ -27,6 +27,16 @@ result_lottery_DB = db['result_lottery']
 tz = pytz.timezone('Asia/Bangkok')
 
 
+class PDF(FPDF):
+    def header(self):
+        self.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
+        self.set_font('DB-Heavent', '', 16)
+        self.set_x(85)
+        self.cell(100, 10, 'ใบสรุปยอดเงินลูกค้า')
+        self.cell(0, 10, f'แผ่นที่ {self.page_no()}')
+        self.ln()
+
+
 @app.route('/api/create-lottery', methods=['POST'])
 def create_lottery():
     try:
@@ -593,60 +603,39 @@ def download_result():
                              'customerName'], how='outer')
         summarize.fillna(0, inplace=True)
         summarize['จ่าย'] = summarize['คงเหลือ'] - summarize['ราคาจ่าย']
-
-        header = ['ตัวเลข', 'ซื้อ', 'จำนวนเงิน', 'หมายเหตุ']
-        header2 = ['', 'ยอดซื้อ', 'เปอร์เซ็น', 'คิดเป็นยอดหัก', 'คิดเป็นเงิน']
-        pdf = FPDF()
-        pdf.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
         customer = pd.merge(customer, summarize, on=[
                             'customerName'], how='outer')
         customer = customer.loc[customer['sum'] != 0]
 
+        pdf = PDF()
+        pdf.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
+        pdf.set_font('DB-Heavent', '', 16)
+        pdf.set_auto_page_break(auto=True, margin=15)
+
+        header = ['ตัวเลข', 'ซื้อ', 'จำนวนเงิน', 'หมายเหตุ']
+        header2 = ['', 'ยอดซื้อ', 'เปอร์เซ็น', 'ยอดหัก', 'คิดเป็นเงิน']
+
         for indexCust, rowCust in customer.iterrows():
-            countRow = 0
-            page_count = 1
-            n = 0
+            pdf.add_page()
+            pdf.set_font('DB-Heavent', '', 16)
+            pdf.set_xy(20, 20)
+            pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
+                     rowCust['customerName'])
+            pdf.ln()
+            pdf.set_x(20)
+            for j in range(len(header)):
+                pdf.cell(40, 10, header[j], border=1)
+            pdf.ln()
             for indexGroupby,  rowGroupby in groupbycustomerName.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if indexGroupby == 0 or countRow % 25 == 0:
-                        pdf.add_page()
-                        pdf.set_font('DB-Heavent', '', 16)
-                        pdf.set_xy(20, 10)
-                        pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
-                                 rowGroupby['customerName'])
-                        pdf.cell(0, 20,
-                                 'แผ่นที่ ' + str(page_count))
-                        pdf.ln()
-                        pdf.set_x(20)
-                        for j in range(len(header)):
-                            pdf.cell(40, 10, header[j], border=1,)
-                        page_count = page_count+1
-                    pdf.ln()
                     pdf.set_x(20)
                     pdf.cell(40, 10, str(rowGroupby['lottery']), border=1)
                     pdf.cell(40, 10, str(rowGroupby['ราคาซื้อ']), border=1)
                     pdf.cell(40, 10, str(rowGroupby['ราคาจ่าย']), border=1)
-                    pdf.cell(40, 10, rowGroupby['หมายเหตุ'], border=1)
-                    countRow = countRow+1
-
+                    pdf.cell(40, 10, rowGroupby['หมายเหตุ'], border=1, ln=True)
             for indexGroupby,  rowGroupby in merge_pc.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if countRow % 25 == 0:
-                        pdf.add_page()
-                        pdf.set_font('DB-Heavent', '', 16)
-                        pdf.set_xy(20, 10)
-                        pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
-                                 rowGroupby['customerName'])
-                        pdf.cell(0, 20,
-                                 'แผ่นที่ ' + str(page_count))
-                        pdf.ln()
-                        pdf.set_x(20)
-                        for j in range(len(header2)):
-                            pdf.cell(30, 10, header2[j])
-                        page_count = page_count+1
-                    if (n == 0):
-                        pdf.ln()
-                        pdf.set_x(20)
+                    if indexGroupby == 0:
                         for j in range(len(header2)):
                             pdf.cell(30, 10, header2[j])
                     pdf.ln()
@@ -656,20 +645,8 @@ def download_result():
                     pdf.cell(30, 10, str(rowGroupby['percen']))
                     pdf.cell(30, 10, str(rowGroupby['หัก']))
                     pdf.cell(30, 10, str(rowGroupby['คงเหลือ']))
-                    countRow = countRow+1
-                    n = n+1
-
             for indexGroupby,  rowGroupby in summarize.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if countRow % 25 == 0:
-                        pdf.add_page()
-                        pdf.set_font('DB-Heavent', '', 16)
-                        pdf.set_xy(20, 10)
-                        pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
-                                 rowGroupby['customerName'])
-                        pdf.cell(0, 20,
-                                 'แผ่นที่ ' + str(page_count))
-                        page_count = page_count+1
                     pdf.ln()
                     pdf.cell(
                         20, 10, '---------------------------------------------------------------------------------------------------------')
@@ -688,9 +665,7 @@ def download_result():
                              str(round(rowGroupby['ราคาจ่าย'], 1)))
                     pdf.cell(40, 10, 'ยอดจ่าย : ' +
                              str(round(rowGroupby['จ่าย'], 1)))
-                    pdf.ln()
-                    countRow = countRow+1
-                    n = n+1
+
         pdf_content = pdf.output(dest='S').encode('latin-1')
         resp = make_response(pdf_content)
         resp.headers['Content-Type'] = 'application/pdf'
