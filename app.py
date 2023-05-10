@@ -35,6 +35,7 @@ class PDF(FPDF):
         self.cell(100, 10, 'ใบสรุปยอดเงินลูกค้า')
         self.cell(0, 10, f'แผ่นที่ {self.page_no()}')
         self.ln()
+        self.set_y(25)
 
 
 @app.route('/api/create-lottery', methods=['POST'])
@@ -76,12 +77,12 @@ def get_lottery():
         print('/api/get-lottery req:', req)
         current_date = datetime.today()
         current_start_of_day = datetime.combine(current_date, time.min)
-        future_date = current_date + timedelta(days=5)
-        future_start_of_day = datetime.combine(future_date, time.min)
+        past_date = current_date - timedelta(days=10)
+        past_start_of_day = datetime.combine(past_date, time.min)
         projection = {'buttom': 1,
                       'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
         result = list(lotteryDB.find({"createdBy": req,
-                                      "createdAt": {"$gte": current_start_of_day, "$lt": future_start_of_day}}, projection).sort(
+                                      "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}}, projection).sort(
             'createdAt', pymongo.ASCENDING))
         for document in result:
             document['id'] = str(document['_id'])
@@ -612,14 +613,14 @@ def download_result():
         pdf.set_font('DB-Heavent', '', 16)
         pdf.set_auto_page_break(auto=True, margin=15)
 
-        header = ['ตัวเลข', 'ซื้อ', 'จำนวนเงิน', 'หมายเหตุ']
+        header = ['ประเภท', 'ตัวเลข', 'ซื้อ', 'จำนวนเงิน']
         header2 = ['', 'ยอดซื้อ', 'เปอร์เซ็น', 'ยอดหัก', 'คิดเป็นเงิน']
 
         for indexCust, rowCust in customer.iterrows():
             pdf.add_page()
             pdf.set_font('DB-Heavent', '', 16)
             pdf.set_xy(20, 20)
-            pdf.cell(145, 20, 'ชื่อลูกค้า : ' +
+            pdf.cell(20, 10, 'ชื่อลูกค้า : ' +
                      rowCust['customerName'])
             pdf.ln()
             pdf.set_x(20)
@@ -629,22 +630,27 @@ def download_result():
             for indexGroupby,  rowGroupby in groupbycustomerName.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
                     pdf.set_x(20)
+                    pdf.cell(40, 10, rowGroupby['หมายเหตุ'], border=1)
                     pdf.cell(40, 10, str(rowGroupby['lottery']), border=1)
                     pdf.cell(40, 10, str(rowGroupby['ราคาซื้อ']), border=1)
-                    pdf.cell(40, 10, str(rowGroupby['ราคาจ่าย']), border=1)
-                    pdf.cell(40, 10, rowGroupby['หมายเหตุ'], border=1, ln=True)
+                    pdf.cell(40, 10, str(
+                        rowGroupby['ราคาจ่าย']), border=1, ln=True)
+
+                n = 0
             for indexGroupby,  rowGroupby in merge_pc.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
-                    if indexGroupby == 0:
+                    if n == 0:
+                        pdf.cell(30, 5, "", ln=True)
                         for j in range(len(header2)):
-                            pdf.cell(30, 10, header2[j])
+                            pdf.cell(35, 10, header2[j])
                     pdf.ln()
                     pdf.set_x(20)
                     pdf.cell(30, 10, str(rowGroupby['type']))
                     pdf.cell(30, 10, str(rowGroupby['sum']))
-                    pdf.cell(30, 10, str(rowGroupby['percen']))
+                    pdf.cell(30, 10, str(rowGroupby['percen']) + "%")
                     pdf.cell(30, 10, str(rowGroupby['หัก']))
                     pdf.cell(30, 10, str(rowGroupby['คงเหลือ']))
+                    n = n+1
             for indexGroupby,  rowGroupby in summarize.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
                     pdf.ln()
