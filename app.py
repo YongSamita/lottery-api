@@ -27,12 +27,22 @@ result_lottery_DB = db['result_lottery']
 tz = pytz.timezone('Asia/Bangkok')
 
 
-class PDF(FPDF):
+class ResultPDF(FPDF):
     def header(self):
         self.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
         self.set_font('DB-Heavent', '', 16)
         self.set_x(85)
         self.cell(100, 10, 'ใบสรุปยอดเงินลูกค้า')
+        self.cell(0, 10, f'แผ่นที่ {self.page_no()}')
+        self.ln()
+        self.set_y(25)
+
+
+class ReportPDF(FPDF):
+    def header(self):
+        self.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
+        self.set_font('DB-Heavent', '', 16)
+        self.set_x(185)
         self.cell(0, 10, f'แผ่นที่ {self.page_no()}')
         self.ln()
         self.set_y(25)
@@ -415,24 +425,22 @@ def download_report():
         thai_year_offset = 543
         thai_date_str = f"{start_date.day} {thai_months[start_date.month]} {start_date.year + thai_year_offset}"
         header = ['ตัวเลข', 'ยอดรวม', 'ยอดเกิน']
-        pdf = FPDF()
+        pdf = ReportPDF()
         pdf.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
-        page_count = 1
+        pdf.set_font('DB-Heavent', '', 16)
+        pdf.set_auto_page_break(auto=True, margin=15)
         if len(resultMapping) > 0:
             for i, doc in enumerate(resultMapping):
-                if i == 0 or i % 25 == 0:
+                if i == 0:
                     pdf.add_page()
                     pdf.set_font('DB-Heavent', '', 16)
-                    pdf.set_xy(20, 20)
+                    pdf.set_xy(20, 10)
                     pdf.cell(60, 10, 'ค่าตั้งรับ')
                     pdf.cell(100, 10, thai_date_str)
-                    pdf.cell(0, 10,
-                             'แผ่นที่ ' + str(page_count))
                     pdf.ln()
                     pdf.set_x(20)
                     pdf.cell(65, 10, str(limitReport))
                     pdf.cell(60, 10, count+typeLotto)
-                    page_count += 1
                     pdf.ln(20)
                     pdf.set_x(30)
                     for j in range(len(header)):
@@ -447,16 +455,13 @@ def download_report():
         else:
             pdf.add_page()
             pdf.set_font('DB-Heavent', '', 16)
-            pdf.set_xy(20, 20)
+            pdf.set_xy(20, 10)
             pdf.cell(60, 10, 'ค่าตั้งรับ')
             pdf.cell(100, 10, thai_date_str)
-            pdf.cell(0, 10,
-                     'แผ่นที่ ' + str(page_count))
             pdf.ln()
             pdf.set_x(20)
             pdf.cell(65, 10, str(limitReport))
             pdf.cell(60, 10, count+typeLotto)
-            page_count += 1
             pdf.ln(20)
             pdf.set_x(30)
             for j in range(len(header)):
@@ -608,7 +613,7 @@ def download_result():
                             'customerName'], how='outer')
         customer = customer.loc[customer['sum'] != 0]
 
-        pdf = PDF()
+        pdf = ResultPDF()
         pdf.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
         pdf.set_font('DB-Heavent', '', 16)
         pdf.set_auto_page_break(auto=True, margin=15)
