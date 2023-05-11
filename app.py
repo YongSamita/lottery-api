@@ -300,7 +300,9 @@ def create_result_lottery():
     try:
         req = request.get_json()
         print('/api/create-result-lottery req:', req)
-        data = {}
+        now = datetime.now()
+        start_date = datetime.combine(now.date(), time.min)
+        end_date = datetime.combine(now.date(), time.max)
         data = {
             "threeTop": req['threeTop'],
             "threeButtom_1": req['threeButtom_1'],
@@ -308,9 +310,11 @@ def create_result_lottery():
             "threeButtom_3": req['threeButtom_3'],
             "threeButtom_4": req['threeButtom_4'],
             "twoTop": req['twoTop'],
-            "twoButtom": req['twoButtom']
+            "twoButtom": req['twoButtom'],
+            "createdAt": datetime.now(tz=tz)
         }
-        document = list(result_lottery_DB.find({}))
+        document = list(result_lottery_DB.find(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         if (len(document) > 0):
             newvalues = {
                 "$set": data
@@ -330,7 +334,31 @@ def create_result_lottery():
 @app.route('/api/get-result-lottery', methods=['GET'])
 def get_result_lottery():
     try:
-        result = list(result_lottery_DB.find({}))
+        response = []
+        result = list(result_lottery_DB.find({}).sort(
+            'createdAt', pymongo.DESCENDING))
+        if (len(result) > 0):
+            response.append(result[0])
+            for document in response:
+                del document['_id']
+            resp = jsonify({"data": response, "status": 200})
+        else:
+            resp = jsonify({"data": [], "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-result-lottery-by-date', methods=['GET'])
+def get_result_lottery_by_date():
+    try:
+        dateLottery = request.args.get('dateLottery')
+        print('/api/get-result-lottery-by-date req:', dateLottery)
+        start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_date = start_date.replace(hour=23, minute=59, second=59)
+        result = list(result_lottery_DB.find(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         for document in result:
             del document['_id']
         resp = jsonify({"data": result, "status": 200})
