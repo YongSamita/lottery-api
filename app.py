@@ -127,6 +127,10 @@ def delete_lottery_by_date():
         end_date = start_date.replace(hour=23, minute=59, second=59)
         lotteryDB.delete_many(
             {"createdAt": {"$gte": start_date, "$lt": end_date}})
+        result_lottery_DB.delete_many(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}})
+        limitDB.delete_many(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}})
         resp = jsonify(
             {"data": 'delete lottery by date success', "status": 200})
     except Exception as e:
