@@ -257,15 +257,19 @@ def create_limit_lottery():
     try:
         req = request.get_json()
         print('/api/create-limit-lottery req:', req)
-        data = {}
+        now = datetime.now()
+        start_date = datetime.combine(now.date(), time.min)
+        end_date = datetime.combine(now.date(), time.max)
         data = {
             "threeTop": req['threeTop'],
             "threeTod": req['threeTod'],
             "threeButtom": req['threeButtom'],
             "twoTop": req['twoTop'],
-            "twoButtom": req['twoButtom']
+            "twoButtom": req['twoButtom'],
+            "createdAt": datetime.now(tz=tz)
         }
-        document = list(limitDB.find({}))
+        document = list(limitDB.find(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         if (len(document) > 0):
             newvalues = {
                 "$set": data
@@ -285,10 +289,16 @@ def create_limit_lottery():
 @app.route('/api/get-limit', methods=['GET'])
 def get_limit():
     try:
-        result = list(limitDB.find({}))
-        for document in result:
-            del document['_id']
-        resp = jsonify({"data": result, "status": 200})
+        response = []
+        result = list(limitDB.find({}).sort(
+            'createdAt', pymongo.DESCENDING))
+        if (len(result) > 0):
+            response.append(result[0])
+            for document in response:
+                del document['_id']
+            resp = jsonify({"data": response, "status": 200})
+        else:
+            resp = jsonify({"data": [], "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -411,7 +421,8 @@ def get_lottery_report():
         pipeline = handleGetPipelineReport(
             count, typeLotto, sortByLottery, start_date, end_date)
         resultLottery = list(lotteryDB.aggregate(pipeline))
-        resultLimit = list(limitDB.find({}))
+        resultLimit = list(limitDB.find(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         resultMapping = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         resp = jsonify({"data": resultMapping, "status": 200})
@@ -438,7 +449,8 @@ def download_report():
         pipeline = handleGetPipelineReport(
             count, typeLotto, sortByLottery, start_date, end_date)
         resultLottery = list(lotteryDB.aggregate(pipeline))
-        resultLimit = list(limitDB.find({}))
+        resultLimit = list(limitDB.find(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         resultMapping = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
@@ -520,7 +532,8 @@ def download_result():
         print('/api/download-result req:', dateLottery)
         start_date = datetime.strptime(dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
         end_date = start_date.replace(hour=23, minute=59, second=59)
-        resultLottery = list(result_lottery_DB.find())
+        resultLottery = list(result_lottery_DB.find(
+            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         resultLottery = pd.DataFrame(resultLottery)
         customer = list(customerDB.find().sort(
             "customerName", pymongo.ASCENDING))
