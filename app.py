@@ -118,7 +118,7 @@ def delete_lottery():
     return resp
 
 
-@app.route('/api/delete-lottery-by-date', methods=['POST'])
+@app.route('/api/delete-data-by-date', methods=['POST'])
 def delete_lottery_by_date():
     try:
         dateLottery = request.args.get('dateLottery')
