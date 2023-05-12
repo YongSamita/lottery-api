@@ -246,7 +246,7 @@ def delete_customer():
     return resp
 
 
-@ app.route('/api/customer/deleteAll', methods=['POST'])
+@ app.route('/api/delete-customer-all', methods=['POST'])
 def deleteAll():
     customerDB.delete_many({})
     return jsonify({"status": "success"})
