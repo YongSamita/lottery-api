@@ -455,6 +455,9 @@ def download_report():
         resultLottery = list(lotteryDB.aggregate(pipeline))
         resultLimit = list(limitDB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
+        if len(resultLimit) == 0:
+            resultLimit = list(limitDB.find({}).sort(
+                'createdAt', pymongo.DESCENDING))
         resultMapping = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
@@ -538,6 +541,7 @@ def download_result():
         end_date = start_date.replace(hour=23, minute=59, second=59)
         resultLottery = list(result_lottery_DB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
+
         resultLottery = pd.DataFrame(resultLottery)
         customer = list(customerDB.find().sort(
             "customerName", pymongo.ASCENDING))
@@ -568,7 +572,6 @@ def download_result():
             [str(winoneTwoButtom1), str(winoneTwoButtom2)]) & (mergeLot['top'] != 0)]
         groupBywinButtomone = winButtomone.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinonebuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinonebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
-        groupBywinButtomone
 
         resultThreeTop = resultLottery.threeTop[0]
         resultThreeTop = str(resultThreeTop)
@@ -579,9 +582,9 @@ def download_result():
         winoneTop3 = resultThreeTop[2]
         winoneTop = mergeLot[mergeLot['lottery'].isin(
             [str(winoneTop1), str(winoneTop2), str(winoneTop3)]) & (mergeLot['top'] != 0)]
+
         groupBywinTopone = winoneTop.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinonetopP']].apply(
             lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinonetopP': 'ราคาจ่าย'})).reset_index(drop=True)
-        groupBywinTopone
 
         winThreeTod = list(permutations(resultThreeTop))
         winThreeTod = set(winThreeTod)
@@ -592,13 +595,11 @@ def download_result():
         winloypae = winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ']
         wincoupletod = winThreeTod.loc[winThreeTod['type'] == 'คู่โต๊ด']
         winThreeTod = winThreeTod.loc[winThreeTod['type'] == '3 ตัวโต๊ด']
+
         groupByWinThreeTod = winThreeTod.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WinthreetodP']].apply(
             lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WinthreetodP': 'ราคาจ่าย'})).reset_index(drop=True)
-
         groupByWincoupletod = wincoupletod.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WincoupletodP']].apply(
             lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WincoupletodP': 'ราคาจ่าย'})).reset_index(drop=True)
-        groupByWincoupletod
-
         groupByWinloypae = winloypae.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WinloypaeP']].apply(
             lambda group: group.rename(columns={'tod': 'ราคาซื้อ', 'WinloypaeP': 'ราคาจ่าย'})).reset_index(drop=True)
 
@@ -613,7 +614,6 @@ def download_result():
             lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinthreetopP': 'ราคาจ่าย'})).reset_index(drop=True)
         groupByWinyumP = winYum.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinyumP']].apply(
             lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinyumP': 'ราคาจ่าย'})).reset_index(drop=True)
-        groupByWinyumP
 
         winThreeButtom_1 = resultLottery.threeButtom_1[0]
         winThreeButtom_2 = resultLottery.threeButtom_2[0]
