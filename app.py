@@ -553,14 +553,36 @@ def download_result():
             mergeLot['threeButtomPrice']
         mergeLot['WintwotopP'] = mergeLot['top']*mergeLot['twoTopPrice']
         mergeLot['WintwobuttomP'] = mergeLot['top']*mergeLot['twoTopPrice']
+        mergeLot['WinonetopP'] = mergeLot['top']*mergeLot['oneTopPrice']
+        mergeLot['WinonebuttomP'] = mergeLot['top']*mergeLot['oneTopPrice']
         mergeLot['WincoupletodP'] = mergeLot['tod']*mergeLot['coupleTodPrice']
         mergeLot['WinloypaeP'] = mergeLot['tod']*mergeLot['loypaePrice']
         mergeLot['WinyumP'] = mergeLot['top']*mergeLot['yumPrice']
+
+        resultTwoButtom = resultLottery.twoButtom[0]
+        resultTwoButtom = str(resultTwoButtom)
+        resultTwoButtom = resultTwoButtom[0] + resultTwoButtom[1]
+        winoneTwoButtom1 = resultTwoButtom[0]
+        winoneTwoButtom2 = resultTwoButtom[1]
+        winButtomone = mergeLot[mergeLot['lottery'].isin(
+            [str(winoneTwoButtom1), str(winoneTwoButtom2)]) & (mergeLot['top'] != 0)]
+        groupBywinButtomone = winButtomone.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinonebuttomP']].apply(
+            lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinonebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
+        groupBywinButtomone
 
         resultThreeTop = resultLottery.threeTop[0]
         resultThreeTop = str(resultThreeTop)
         resultThreeTop = resultThreeTop[0] + \
             resultThreeTop[1] + resultThreeTop[2]
+        winoneTop1 = resultThreeTop[0]
+        winoneTop2 = resultThreeTop[1]
+        winoneTop3 = resultThreeTop[2]
+        winoneTop = mergeLot[mergeLot['lottery'].isin(
+            [str(winoneTop1), str(winoneTop2), str(winoneTop3)]) & (mergeLot['top'] != 0)]
+        groupBywinTopone = winoneTop.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinonetopP']].apply(
+            lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinonetopP': 'ราคาจ่าย'})).reset_index(drop=True)
+        groupBywinTopone
+
         winThreeTod = list(permutations(resultThreeTop))
         winThreeTod = set(winThreeTod)
         winThreeTod = ["".join(t) for t in winThreeTod]
@@ -616,7 +638,7 @@ def download_result():
         winTwoButtom = winTwoButtom.replace({'type': {'2 ตัว': '2 ตัวล่าง'}})
         groupBywinTwoButtom = winTwoButtom.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WintwobuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WintwobuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
-        concatenated = pd.concat([groupByWinTopThree, groupByWinThreeTod,
+        concatenated = pd.concat([groupByWinTopThree, groupByWinThreeTod, groupBywinButtomone, groupBywinTopone,
                                   groupByWinThreeButtom, groupBywinTopTwo, groupBywinTwoButtom, groupByWincoupletod, groupByWinloypae, groupByWinyumP])
 
         groupbycustomerName = concatenated.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[
