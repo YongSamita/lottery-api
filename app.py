@@ -455,9 +455,6 @@ def download_report():
         resultLottery = list(lotteryDB.aggregate(pipeline))
         resultLimit = list(limitDB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
-        if len(resultLimit) == 0:
-            resultLimit = list(limitDB.find({}).sort(
-                'createdAt', pymongo.DESCENDING))
         resultMapping = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
