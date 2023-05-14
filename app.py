@@ -483,7 +483,7 @@ def download_report():
                     pdf.cell(100, 10, thai_date_str)
                     pdf.ln()
                     pdf.set_x(20)
-                    pdf.cell(65, 10, str(limitReport))
+                    pdf.cell(65, 10, str(format(limitReport, ',')))
                     pdf.cell(60, 10, count+typeLotto)
                     pdf.ln(20)
                     pdf.set_x(30)
@@ -492,9 +492,9 @@ def download_report():
                     pdf.ln()
                 pdf.set_x(30)
                 pdf.cell(50, 10, doc['lottery'], border=1)
-                pdf.cell(50, 10, str(doc['sum']), border=1)
+                pdf.cell(50, 10, str(format(doc['sum'], ',')), border=1)
                 pdf.cell(50, 10, str(
-                    doc['over']), border=1)
+                    format(doc['over'], ',')), border=1)
                 pdf.ln()
         else:
             pdf.add_page()
@@ -504,7 +504,7 @@ def download_report():
             pdf.cell(100, 10, thai_date_str)
             pdf.ln()
             pdf.set_x(20)
-            pdf.cell(65, 10, str(limitReport))
+            pdf.cell(65, 10, str(format(limitReport, ',')))
             pdf.cell(60, 10, count+typeLotto)
             pdf.ln(20)
             pdf.set_x(30)
@@ -513,11 +513,11 @@ def download_report():
             pdf.ln()
         pdf.ln(10)
         pdf.set_x(30)
-        pdf.cell(50, 10, 'รวมยอดรวม: '+str(sum_sum), ln=1)
+        pdf.cell(50, 10, 'รวมยอดรวม: '+str(format(sum_sum, ',')), ln=1)
         pdf.set_x(30)
-        pdf.cell(50, 10, 'ยอดรับ: '+str(limitReport), ln=1)
+        pdf.cell(50, 10, 'ยอดรับ: '+str(format(limitReport, ',')), ln=1)
         pdf.set_x(30)
-        pdf.cell(50, 10, 'รวมยอดเกิน: '+str(over_sum), ln=1)
+        pdf.cell(50, 10, 'รวมยอดเกิน: '+str(format(over_sum, ',')), ln=1)
         pdf_content = pdf.output(dest='S').encode('latin-1')
         resp = make_response(pdf_content)
         resp.headers['Content-Type'] = 'application/pdf'
@@ -682,10 +682,10 @@ def download_result():
                     pdf.set_x(20)
                     pdf.cell(40, 10, rowGroupby['หมายเหตุ'], border=1)
                     pdf.cell(40, 10, str(rowGroupby['lottery']), border=1)
-                    pdf.cell(40, 10, str(rowGroupby['ราคาซื้อ']), border=1)
                     pdf.cell(40, 10, str(
-                        rowGroupby['ราคาจ่าย']), border=1, ln=True)
-
+                        format(rowGroupby['ราคาซื้อ'], ',')), border=1)
+                    pdf.cell(40, 10, str(
+                        format(rowGroupby['ราคาจ่าย'], ',')), border=1, ln=True)
                 n = 0
             for indexGroupby,  rowGroupby in merge_pc.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
@@ -696,10 +696,10 @@ def download_result():
                     pdf.ln()
                     pdf.set_x(20)
                     pdf.cell(30, 10, str(rowGroupby['type']))
-                    pdf.cell(30, 10, str(rowGroupby['sum']))
+                    pdf.cell(30, 10, str(format(rowGroupby['sum'], ',')))
                     pdf.cell(30, 10, str(rowGroupby['percen']) + "%")
-                    pdf.cell(30, 10, str(rowGroupby['หัก']))
-                    pdf.cell(30, 10, str(rowGroupby['คงเหลือ']))
+                    pdf.cell(30, 10, str(format(rowGroupby['หัก'], ',')))
+                    pdf.cell(30, 10, str(format(rowGroupby['คงเหลือ'], ',')))
                     n = n+1
             for indexGroupby,  rowGroupby in summarize.iterrows():
                 if (rowGroupby['customerName'] == rowCust['customerName']):
@@ -710,17 +710,17 @@ def download_result():
                     pdf.set_x(20)
                     pdf.cell(20, 10, 'สรุป')
                     pdf.cell(40, 10, 'ยอดซื้อ : ' +
-                             str(round(rowGroupby['sum'], 1)))
+                             str(format(round(rowGroupby['sum'], 1), ',')))
                     pdf.cell(40, 10, 'ยอดหัก : ' +
-                             str(round(rowGroupby['หัก'], 1)))
+                             str(format(round(rowGroupby['หัก'], 1), ',')))
                     pdf.cell(40, 10, 'ยอดคงเหลือ : ' +
-                             str(round(rowGroupby['คงเหลือ'], 1)))
+                             str(format(round(rowGroupby['คงเหลือ'], 1), ',')))
                     pdf.ln()
                     pdf.set_x(40)
                     pdf.cell(40, 10, 'ยอดถูก : ' +
-                             str(round(rowGroupby['ราคาจ่าย'], 1)))
+                             str(format(round(rowGroupby['ราคาจ่าย'], 1), ',')))
                     pdf.cell(40, 10, 'ยอดจ่าย : ' +
-                             str(round(rowGroupby['จ่าย'], 1)))
+                             str(format(round(rowGroupby['จ่าย'], 1), ',')))
 
         pdf_content = pdf.output(dest='S').encode('latin-1')
         resp = make_response(pdf_content)
