@@ -439,7 +439,7 @@ def get_lottery_report():
             sum_sum += lottery["sum"]
         deduction = sum_sum - (sum_sum*(35/100))
         resp = jsonify({"data": {'resultTable': resultMapping, 'summarize': {
-                       'sum': sum_sum, 'limit': limitReport, 'deduction': deduction}}, "status": 200})
+                       'sum': sum_sum, 'limit': limitReport, 'deduction': round(deduction, 1)}}, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -538,7 +538,7 @@ def download_report():
         pdf.cell(50, 10, 'ยอดรับ: '+str(format(limitReport, ',')), ln=1)
         pdf.set_x(30)
         pdf.cell(50, 10, 'ยอดหัก 35%: ' +
-                 str(format(sum_sum - (sum_sum*(35/100)), ',')), ln=1)
+                 str(format(round(sum_sum - (sum_sum*(35/100)), 1), ',')), ln=1)
         pdf_content = pdf.output(dest='S').encode('latin-1')
         resp = make_response(pdf_content)
         resp.headers['Content-Type'] = 'application/pdf'
