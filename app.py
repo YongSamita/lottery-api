@@ -85,7 +85,7 @@ def get_lottery():
     try:
         req = request.args.get('createdBy')
         print('/api/get-lottery req:', req)
-        current_date = datetime.today()
+        current_date = datetime.utcnow() + timedelta(hours=13)
         current_start_of_day = datetime.combine(current_date, time.max)
         past_date = current_date - timedelta(days=10)
         past_start_of_day = datetime.combine(past_date, time.min)
