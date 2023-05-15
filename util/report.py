@@ -49,7 +49,7 @@ def handleGetPipelineReport(count, typeLotto, sortByLottery, start_date, end_dat
     if (sortByLottery == 'true'):
         pipeline.append({
             '$sort': {
-                '_id': -1
+                '_id': 1
             }
         })
     else:
