@@ -413,6 +413,8 @@ def get_date_lottery():
 @ app.route('/api/get-report', methods=['GET'])
 def get_lottery_report():
     try:
+        sum_sum = 0
+        deduction = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
@@ -427,9 +429,17 @@ def get_lottery_report():
         resultLottery = list(lotteryDB.aggregate(pipeline))
         resultLimit = list(limitDB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
+        if len(resultLimit) == 0:
+            resultLimit = list(limitDB.find({}).sort(
+                'createdAt', pymongo.DESCENDING))
         resultMapping = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
-        resp = jsonify({"data": resultMapping, "status": 200})
+        limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
+        for lottery in resultMapping:
+            sum_sum += lottery["sum"]
+        deduction = sum_sum - (sum_sum*(35/100))
+        resp = jsonify({"data": {'resultTable': resultMapping, 'summarize': {
+                       'sum': sum_sum, 'limit': limitReport, 'deduction': deduction}}, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -439,7 +449,6 @@ def get_lottery_report():
 @ app.route('/api/download-report', methods=['GET'])
 def download_report():
     try:
-        over_sum = 0
         sum_sum = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
@@ -455,11 +464,22 @@ def download_report():
         resultLottery = list(lotteryDB.aggregate(pipeline))
         resultLimit = list(limitDB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
+        if len(resultLimit) == 0:
+            resultLimit = list(limitDB.find({}).sort(
+                'createdAt', pymongo.DESCENDING))
+            data = {
+                "threeTop": resultLimit[0]['threeTop'],
+                "threeTod": resultLimit[0]['threeTod'],
+                "threeButtom": resultLimit[0]['threeButtom'],
+                "twoTop": resultLimit[0]['twoTop'],
+                "twoButtom": resultLimit[0]['twoButtom'],
+                "createdAt": datetime.now(tz=tz)
+            }
+            limitDB.insert_one(data)
         resultMapping = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
         for lottery in resultMapping:
-            over_sum += lottery["over"]
             sum_sum += lottery["sum"]
         thai_months = [
             None, 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม',
@@ -517,7 +537,8 @@ def download_report():
         pdf.set_x(30)
         pdf.cell(50, 10, 'ยอดรับ: '+str(format(limitReport, ',')), ln=1)
         pdf.set_x(30)
-        pdf.cell(50, 10, 'รวมยอดเกิน: '+str(format(over_sum, ',')), ln=1)
+        pdf.cell(50, 10, 'ยอดหัก 35%: ' +
+                 str(format(sum_sum - (sum_sum*(35/100)), ',')), ln=1)
         pdf_content = pdf.output(dest='S').encode('latin-1')
         resp = make_response(pdf_content)
         resp.headers['Content-Type'] = 'application/pdf'
