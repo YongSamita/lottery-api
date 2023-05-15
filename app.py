@@ -65,7 +65,7 @@ def create_lottery():
         elif req['type'] == 'ยำ':
             result = handleCreateYums(req)
         else:
-            req['createdAt'] = datetime.now(tz=tz)
+            req['createdAt'] = datetime.utcnow() + timedelta(hours=13)
             result.append(req)
         lotteryDB.insert_many(result)
         for document in result:
@@ -261,7 +261,7 @@ def create_limit_lottery():
     try:
         req = request.get_json()
         print('/api/create-limit-lottery req:', req)
-        now = datetime.now()
+        now = datetime.utcnow() + timedelta(hours=13)
         start_date = datetime.combine(now.date(), time.min)
         end_date = datetime.combine(now.date(), time.max)
         data = {
@@ -270,7 +270,7 @@ def create_limit_lottery():
             "threeButtom": req['threeButtom'],
             "twoTop": req['twoTop'],
             "twoButtom": req['twoButtom'],
-            "createdAt": datetime.now(tz=tz)
+            "createdAt": datetime.utcnow() + timedelta(hours=13)
         }
         document = list(limitDB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
@@ -473,7 +473,7 @@ def download_report():
                 "threeButtom": resultLimit[0]['threeButtom'],
                 "twoTop": resultLimit[0]['twoTop'],
                 "twoButtom": resultLimit[0]['twoButtom'],
-                "createdAt": datetime.now(tz=tz)
+                "createdAt": datetime.utcnow() + timedelta(hours=13)
             }
             limitDB.insert_one(data)
         resultMapping, resultSum = handleMappingResponseData(

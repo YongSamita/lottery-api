@@ -1,7 +1,7 @@
 
 from itertools import combinations, permutations
 from flask import request
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 tz = pytz.timezone('Asia/Bangkok')
 
@@ -28,7 +28,7 @@ def handleCreateThreeSixSwitch(data):
                 "buttom": data['buttom'],
                 "type": "6 กลับ",
                 "createdBy": data['createdBy'],
-                "createdAt":  datetime.now(tz=tz)
+                "createdAt":  datetime.utcnow() + timedelta(hours=13)
             })
         else:
             json_list.append({
@@ -40,7 +40,7 @@ def handleCreateThreeSixSwitch(data):
                 "buttom": data['buttom'],
                 "type": "3 กลับ",
                 "createdBy": data['createdBy'],
-                "createdAt":  datetime.now(tz=tz)
+                "createdAt":  datetime.utcnow() + timedelta(hours=13)
             })
     return json_list
 
@@ -67,7 +67,7 @@ def handleCreateNineteen(data):
             "buttom": data['buttom'],
             "type": "19 ประตู",
             "createdBy": data['createdBy'],
-            "createdAt":  datetime.now(tz=tz)
+            "createdAt": datetime.utcnow() + timedelta(hours=13)
         })
     return json_list
 
@@ -91,7 +91,7 @@ def handleCreateCupleTod(data):
             "buttom": data['buttom'],
             "type": "คู่โต๊ด",
             "createdBy": data['createdBy'],
-            "createdAt":  datetime.now(tz=tz)
+            "createdAt":  datetime.utcnow() + timedelta(hours=13)
         })
     return json_list
 
@@ -118,13 +118,12 @@ def handleCreateLoyPae(data):
             "buttom": data['buttom'],
             "type": "ลอยแพ",
             "createdBy": data['createdBy'],
-            "createdAt":  datetime.now(tz=tz)
+            "createdAt": datetime.utcnow() + timedelta(hours=13)
         })
     return json_list
 
 
 def handleCreateYums(data):
-    print(datetime.now(tz))
     json_list = []
     numbers = []
     result_perm = []
@@ -149,6 +148,6 @@ def handleCreateYums(data):
             "buttom": data['buttom'],
             "type": "ยำ",
             "createdBy": data['createdBy'],
-            "createdAt":  datetime.now(tz=tz)
+            "createdAt":  datetime.utcnow() + timedelta(hours=13)
         })
     return json_list
