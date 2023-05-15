@@ -76,6 +76,7 @@ def handleGetPipelineReport(count, typeLotto, sortByLottery, start_date, end_dat
 
 def handleMappingResponseData(count, typeLotto, overLottery, resultLottery, resultLimit):
     result = []
+    resultSum = []
     if (len(resultLimit) > 0):
         for document in resultLottery:
             if (count == '3 ตัว'):
@@ -130,6 +131,7 @@ def handleMappingResponseData(count, typeLotto, overLottery, resultLottery, resu
             del document['top']
             del document['tod']
             del document['_id']
+            resultSum.append(document)
             if (document['over'] == 0):
                 if (overLottery == 'false'):
                     result.append(document)
@@ -174,7 +176,7 @@ def handleMappingResponseData(count, typeLotto, overLottery, resultLottery, resu
             else:
                 result.append(document)
 
-    return result
+    return result, resultSum
 
 
 def handleGetLimitReport(count, typeLotto, resultLimit):

@@ -432,10 +432,10 @@ def get_lottery_report():
         if len(resultLimit) == 0:
             resultLimit = list(limitDB.find({}).sort(
                 'createdAt', pymongo.DESCENDING))
-        resultMapping = handleMappingResponseData(
+        resultMapping, resultSum = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
-        for lottery in resultMapping:
+        for lottery in resultSum:
             sum_sum += lottery["sum"]
         deduction = sum_sum - (sum_sum*(35/100))
         resp = jsonify({"data": {'resultTable': resultMapping, 'summarize': {
@@ -476,10 +476,10 @@ def download_report():
                 "createdAt": datetime.now(tz=tz)
             }
             limitDB.insert_one(data)
-        resultMapping = handleMappingResponseData(
+        resultMapping, resultSum = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
-        for lottery in resultMapping:
+        for lottery in resultSum:
             sum_sum += lottery["sum"]
         thai_months = [
             None, 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม',
