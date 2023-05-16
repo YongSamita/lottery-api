@@ -132,10 +132,7 @@ def handleMappingResponseData(count, typeLotto, overLottery, resultLottery, resu
             del document['tod']
             del document['_id']
             resultSum.append(document)
-            if (document['over'] == 0):
-                if (overLottery == 'false'):
-                    result.append(document)
-            else:
+            if (document['over'] != 0):
                 result.append(document)
     else:
         for document in resultLottery:
@@ -170,10 +167,7 @@ def handleMappingResponseData(count, typeLotto, overLottery, resultLottery, resu
             del document['top']
             del document['tod']
             del document['_id']
-            if (document['over'] == 0):
-                if (overLottery == 'false'):
-                    result.append(document)
-            else:
+            if (document['over'] != 0):
                 result.append(document)
 
     return result, resultSum

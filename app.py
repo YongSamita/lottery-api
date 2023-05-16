@@ -498,7 +498,7 @@ def download_report():
         ]
         thai_year_offset = 543
         thai_date_str = f"{start_date.day} {thai_months[start_date.month]} {start_date.year + thai_year_offset}"
-        header = ['ตัวเลข', 'ยอดรวม', 'ยอดเกิน']
+        header = ['ตัวเลข', 'ยอดเกิน']
         pdf = ReportPDF()
         pdf.add_font('DB-Heavent', '', 'fonts/DB-Heavent.ttf', uni=True)
         pdf.set_font('DB-Heavent', '', 16)
@@ -522,7 +522,6 @@ def download_report():
                     pdf.ln()
                 pdf.set_x(30)
                 pdf.cell(50, 10, doc['lottery'], border=1)
-                pdf.cell(50, 10, str(format(doc['sum'], ',')), border=1)
                 pdf.cell(50, 10, str(
                     format(doc['over'], ',')), border=1)
                 pdf.ln()
