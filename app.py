@@ -104,6 +104,29 @@ def get_lottery():
     return resp
 
 
+@app.route('/api/get-lottery-all', methods=['GET'])
+def get_lottery_all():
+    try:
+        req = request.args.get('lottery')
+        current_date = datetime.utcnow() + timedelta(hours=13)
+        current_start_of_day = datetime.combine(current_date, time.max)
+        past_date = current_date - timedelta(days=10)
+        past_start_of_day = datetime.combine(past_date, time.min)
+        projection = {'buttom': 1,
+                      'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
+        result = list(lotteryDB.find({
+            "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}, "lottery": req}, projection).sort(
+            'createdAt', pymongo.ASCENDING))
+        for document in result:
+            document['id'] = str(document['_id'])
+            del document['_id']
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
 @app.route('/api/delete-lottery', methods=['POST'])
 def delete_lottery():
     try:
@@ -411,7 +434,7 @@ def get_date_lottery():
 
 
 @ app.route('/api/get-report', methods=['GET'])
-def get_lottery_report():
+def get_report():
     try:
         sum_sum = 0
         yod_lup = 0
@@ -585,9 +608,9 @@ def download_result():
         mergeLot['WinthreebuttomP'] = mergeLot['buttom'] * \
             mergeLot['threeButtomPrice']
         mergeLot['WintwotopP'] = mergeLot['top']*mergeLot['twoTopPrice']
-        mergeLot['WintwobuttomP'] = mergeLot['top']*mergeLot['twoTopPrice']
+        mergeLot['WintwobuttomP'] = mergeLot['buttom']*mergeLot['twoTopPrice']
         mergeLot['WinonetopP'] = mergeLot['top']*mergeLot['oneTopPrice']
-        mergeLot['WinonebuttomP'] = mergeLot['top']*mergeLot['oneTopPrice']
+        mergeLot['WinonebuttomP'] = mergeLot['buttom']*mergeLot['oneTopPrice']
         mergeLot['WincoupletodP'] = mergeLot['tod']*mergeLot['coupleTodPrice']
         mergeLot['WinloypaeP'] = mergeLot['tod']*mergeLot['loypaePrice']
         mergeLot['WinyumP'] = mergeLot['top']*mergeLot['yumPrice']
@@ -597,8 +620,10 @@ def download_result():
         resultTwoButtom = resultTwoButtom[0] + resultTwoButtom[1]
         winoneTwoButtom1 = resultTwoButtom[0]
         winoneTwoButtom2 = resultTwoButtom[1]
+        resultTwoButtom = winoneTwoButtom1.replace(
+            {'type': {'วิ่ง': 'วิ่งล่าง'}})
         winButtomone = mergeLot[mergeLot['lottery'].isin(
-            [str(winoneTwoButtom1), str(winoneTwoButtom2)]) & (mergeLot['top'] != 0)]
+            [str(winoneTwoButtom1), str(winoneTwoButtom2)]) & (mergeLot['buttom'] != 0)]
         groupBywinButtomone = winButtomone.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinonebuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinonebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
 
