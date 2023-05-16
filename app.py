@@ -7,7 +7,7 @@ from bson import ObjectId
 from flask_cors import CORS
 from datetime import datetime, time, timedelta
 from fpdf import FPDF
-from util.report import handleGetLimitReport, handleGetPipelineReport, handleMappingResponseData
+from util.report import handleGetLimitReport, handleGetPipelineReport, handleMappingResponseData, handleMappingResponseDataOver
 import pandas as pd
 import numpy as np
 import pytz
@@ -434,7 +434,7 @@ def get_lottery_report():
         if len(resultLimit) == 0:
             resultLimit = list(limitDB.find({}).sort(
                 'createdAt', pymongo.DESCENDING))
-        resultMapping, resultSum = handleMappingResponseData(
+        resultMapping, resultSum = handleMappingResponseDataOver(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
         for lottery in resultSum:

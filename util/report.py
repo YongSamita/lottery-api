@@ -173,6 +173,111 @@ def handleMappingResponseData(count, typeLotto, overLottery, resultLottery, resu
     return result, resultSum
 
 
+def handleMappingResponseDataOver(count, typeLotto, overLottery, resultLottery, resultLimit):
+    result = []
+    resultSum = []
+    if (len(resultLimit) > 0):
+        for document in resultLottery:
+            if (count == '3 ตัว'):
+                if (typeLotto == 'บน'):
+                    over = document['top'] - resultLimit[0]['threeTop']
+                    document['sum'] = document['top']
+                    if (over <= 0):
+                        document['over'] = 0
+                    else:
+                        document['over'] = over
+                elif (typeLotto == 'โต๊ด'):
+                    over = document['tod'] - resultLimit[0]['threeTod']
+                    document['sum'] = document['tod']
+                    if (over <= 0):
+                        document['over'] = 0
+                    else:
+                        document['over'] = over
+                elif (typeLotto == 'ล่าง'):
+                    over = document['buttom'] - \
+                        resultLimit[0]['threeButtom']
+                    document['sum'] = document['buttom']
+                    if (over <= 0):
+                        document['over'] = 0
+                    else:
+                        document['over'] = over
+            if (count == '2 ตัว'):
+                if (typeLotto == 'บน'):
+                    over = document['top'] - resultLimit[0]['twoTop']
+                    document['sum'] = document['top']
+                    if (over <= 0):
+                        document['over'] = 0
+                    else:
+                        document['over'] = over
+                elif (typeLotto == 'ล่าง'):
+                    over = document['buttom'] - resultLimit[0]['twoButtom']
+                    document['sum'] = document['buttom']
+                    if (over <= 0):
+                        document['over'] = 0
+                    else:
+                        document['over'] = over
+            if (count == 'วิ่ง'):
+                if (typeLotto == 'บน'):
+                    document['sum'] = document['top']
+                    document['over'] = 0
+                elif (typeLotto == 'ล่าง'):
+                    document['sum'] = document['buttom']
+                    document['over'] = 0
+            document['id'] = document['_id']['lottery']
+            document['lottery'] = document['_id']['lottery']
+            document['createdAt'] = document['_id']['createdAt']
+            del document['buttom']
+            del document['top']
+            del document['tod']
+            del document['_id']
+            resultSum.append(document)
+            if (document['over'] == 0):
+                if (overLottery == 'false'):
+                    result.append(document)
+            else:
+                result.append(document)
+    else:
+        for document in resultLottery:
+            if (count == '3 ตัว'):
+                if (typeLotto == 'บน'):
+                    document['sum'] = document['top']
+                    document['over'] = 0
+                elif (typeLotto == 'โต๊ด'):
+                    document['sum'] = document['tod']
+                    document['over'] = 0
+                elif (typeLotto == 'ล่าง'):
+                    document['sum'] = document['buttom']
+                    document['over'] = 0
+            if (count == '2 ตัว'):
+                if (typeLotto == 'บน'):
+                    document['sum'] = document['top']
+                    document['over'] = 0
+                elif (typeLotto == 'ล่าง'):
+                    document['sum'] = document['buttom']
+                    document['over'] = 0
+            if (count == 'วิ่ง'):
+                if (typeLotto == 'บน'):
+                    document['sum'] = document['top']
+                    document['over'] = 0
+                elif (typeLotto == 'ล่าง'):
+                    document['sum'] = document['buttom']
+                    document['over'] = 0
+            document['id'] = document['_id']['lottery']
+            document['lottery'] = document['_id']['lottery']
+            document['createdAt'] = document['_id']['createdAt']
+            del document['buttom']
+            del document['top']
+            del document['tod']
+            del document['_id']
+            if (document['over'] == 0):
+                if (overLottery == 'false'):
+                    result.append(document)
+            else:
+                result.append(document)
+
+    return result, resultSum
+
+
 def handleGetLimitReport(count, typeLotto, resultLimit):
     limit = 0
     if len(resultLimit) > 0:
