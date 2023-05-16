@@ -1,5 +1,5 @@
 from flask import Flask, make_response, request, jsonify
-from itertools import permutations
+from itertools import groupby, permutations
 from pymongo import MongoClient
 import pymongo
 from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
@@ -452,6 +452,7 @@ def get_report():
         pipeline = handleGetPipelineReport(
             count, typeLotto, sortByLottery, start_date, end_date)
         resultLottery = list(lotteryDB.aggregate(pipeline))
+
         resultLimit = list(limitDB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         if len(resultLimit) == 0:
@@ -459,7 +460,26 @@ def get_report():
                 'createdAt', pymongo.DESCENDING))
         resultMapping, resultSum = handleMappingResponseDataOver(
             count, typeLotto, overLottery, resultLottery, resultLimit)
-        limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
+        if typeLotto == 'โต๊ด':
+            for doc in resultMapping:
+                doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
+            if sortByLottery == 'true':
+                resultMapping = sorted(
+                    resultMapping, key=lambda x: x['lottery_tod'])
+            groups = groupby(resultMapping,
+                             key=lambda x: x['lottery_tod'])
+            grouped_data = []
+            for key, group in groups:
+                group_sum = sum(item['sum'] for item in group)
+                group_over = sum(item['over'] for item in group)
+                grouped_data.append({
+                    "id": key,
+                    "lottery": key,
+                    "sum": group_sum,
+                    "over": group_over
+                })
+            resultMapping = grouped_data
+
         for lottery in resultSum:
             sum_sum += lottery["sum"]
             over_sum += lottery["over"]
