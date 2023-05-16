@@ -460,6 +460,8 @@ def get_report():
                 'createdAt', pymongo.DESCENDING))
         resultMapping, resultSum = handleMappingResponseDataOver(
             count, typeLotto, overLottery, resultLottery, resultLimit)
+        for document in resultMapping:
+            del document['createdAt']
         if typeLotto == 'โต๊ด':
             for doc in resultMapping:
                 doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
