@@ -414,7 +414,9 @@ def get_date_lottery():
 def get_lottery_report():
     try:
         sum_sum = 0
-        deduction = 0
+        yod_lup = 0
+        yod_lup35 = 0
+        over_sum = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
@@ -437,9 +439,11 @@ def get_lottery_report():
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
         for lottery in resultSum:
             sum_sum += lottery["sum"]
-        deduction = sum_sum - (sum_sum*(35/100))
+            over_sum += lottery["over"]
+        yod_lup = sum_sum - over_sum
+        yod_lup35 = yod_lup - (yod_lup * 35/100)
         resp = jsonify({"data": {'resultTable': resultMapping, 'summarize': {
-                       'sum': sum_sum, 'limit': limitReport, 'deduction': round(deduction, 1)}}, "status": 200})
+                       'sum': sum_sum, 'sum_over': over_sum, 'yod_lup': yod_lup, 'yod_lup35': round(yod_lup35, 1)}}, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -451,6 +455,7 @@ def download_report():
     try:
         sum_sum = 0
         over_sum = 0
+        yod_lup = 0
         yod_lup35 = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
@@ -484,7 +489,8 @@ def download_report():
         for lottery in resultSum:
             sum_sum += lottery["sum"]
             over_sum += lottery["over"]
-        yod_lup35 = ((sum_sum - over_sum) - ((sum_sum - over_sum)*35/100))
+        yod_lup = sum_sum - over_sum
+        yod_lup35 = (yod_lup - (yod_lup*35/100))
         thai_months = [
             None, 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม',
             'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน',
@@ -541,7 +547,7 @@ def download_report():
         pdf.set_x(30)
         pdf.cell(50, 10, 'รวมยอดเกิน: '+str(format(over_sum, ',')), ln=1)
         pdf.set_x(30)
-        pdf.cell(50, 10, 'ยอดรับ: '+str(format(sum_sum-over_sum, ',')), ln=1)
+        pdf.cell(50, 10, 'ยอดรับ: '+str(format(yod_lup, ',')), ln=1)
         pdf.set_x(30)
         pdf.cell(50, 10, 'ยอดหัก 35%: ' +
                  str(format(round(yod_lup35, 1), ',')), ln=1)
