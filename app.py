@@ -450,6 +450,8 @@ def get_lottery_report():
 def download_report():
     try:
         sum_sum = 0
+        over_sum = 0
+        yod_lup35 = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
@@ -481,6 +483,8 @@ def download_report():
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
         for lottery in resultSum:
             sum_sum += lottery["sum"]
+            over_sum += lottery["over"]
+        yod_lup35 = ((sum_sum - over_sum) - ((sum_sum - over_sum)*35/100))
         thai_months = [
             None, 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม',
             'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน',
@@ -535,10 +539,12 @@ def download_report():
         pdf.set_x(30)
         pdf.cell(50, 10, 'รวมยอดรวม: '+str(format(sum_sum, ',')), ln=1)
         pdf.set_x(30)
-        pdf.cell(50, 10, 'ยอดรับ: '+str(format(limitReport, ',')), ln=1)
+        pdf.cell(50, 10, 'รวมยอดเกิน: '+str(format(over_sum, ',')), ln=1)
+        pdf.set_x(30)
+        pdf.cell(50, 10, 'ยอดรับ: '+str(format(sum_sum-over_sum, ',')), ln=1)
         pdf.set_x(30)
         pdf.cell(50, 10, 'ยอดหัก 35%: ' +
-                 str(format(round(sum_sum - (sum_sum*(35/100)), 1), ',')), ln=1)
+                 str(format(round(yod_lup35, 1), ',')), ln=1)
         pdf_content = pdf.output(dest='S').encode('latin-1')
         resp = make_response(pdf_content)
         resp.headers['Content-Type'] = 'application/pdf'
