@@ -452,7 +452,6 @@ def get_report():
         pipeline = handleGetPipelineReport(
             count, typeLotto, sortByLottery, start_date, end_date)
         resultLottery = list(lotteryDB.aggregate(pipeline))
-
         resultLimit = list(limitDB.find(
             {"createdAt": {"$gte": start_date, "$lt": end_date}}))
         if len(resultLimit) == 0:
@@ -460,8 +459,8 @@ def get_report():
                 'createdAt', pymongo.DESCENDING))
         resultMapping, resultSum = handleMappingResponseDataOver(
             count, typeLotto, overLottery, resultLottery, resultLimit)
-        for document in resultMapping:
-            del document['createdAt']
+
+        # ใช้สำหรับ display tod หน้า report ต้องทำการ groupby tod
         if typeLotto == 'โต๊ด':
             for doc in resultMapping:
                 doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
