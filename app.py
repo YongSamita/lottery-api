@@ -465,9 +465,8 @@ def get_report():
         if typeLotto == 'โต๊ด':
             for doc in resultMapping:
                 doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
-            if sortByLottery == 'true':
-                resultMapping = sorted(
-                    resultMapping, key=lambda x: x['lottery_tod'])
+            resultMapping = sorted(
+                resultMapping, key=lambda x: x['lottery_tod'])
             groups = groupby(resultMapping,
                              key=lambda x: x['lottery_tod'])
             grouped_data = []
@@ -480,6 +479,9 @@ def get_report():
                     "sum": group_sum,
                     "over": group_over
                 })
+            if sortByLottery == 'true':
+                grouped_data = sorted(
+                    grouped_data, key=lambda x: x['sum'], reverse=True)
             resultMapping = grouped_data
 
         for lottery in resultSum:
@@ -642,10 +644,10 @@ def download_result():
         resultTwoButtom = resultTwoButtom[0] + resultTwoButtom[1]
         winoneTwoButtom1 = resultTwoButtom[0]
         winoneTwoButtom2 = resultTwoButtom[1]
-        resultTwoButtom = winoneTwoButtom1.replace(
-            {'type': {'วิ่ง': 'วิ่งล่าง'}})
         winButtomone = mergeLot[mergeLot['lottery'].isin(
             [str(winoneTwoButtom1), str(winoneTwoButtom2)]) & (mergeLot['buttom'] != 0)]
+        resultTwoButtom = winButtomone.replace(
+            {'type': {'วิ่ง': 'วิ่งล่าง'}})
         groupBywinButtomone = winButtomone.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinonebuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinonebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
 
@@ -658,7 +660,8 @@ def download_result():
         winoneTop3 = resultThreeTop[2]
         winoneTop = mergeLot[mergeLot['lottery'].isin(
             [str(winoneTop1), str(winoneTop2), str(winoneTop3)]) & (mergeLot['top'] != 0)]
-
+        resultOneTop = winoneTop.replace(
+            {'type': {'วิ่ง': 'วิ่งบน'}})
         groupBywinTopone = winoneTop.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinonetopP']].apply(
             lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinonetopP': 'ราคาจ่าย'})).reset_index(drop=True)
 
