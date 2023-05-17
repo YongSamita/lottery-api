@@ -478,7 +478,7 @@ def get_report():
                     "sum": group_sum,
                     "over": group_over
                 })
-            if sortByLottery == 'true':
+            if sortByLottery == 'false':
                 grouped_data = sorted(
                     grouped_data, key=lambda x: x['sum'], reverse=True)
             resultMapping = grouped_data
