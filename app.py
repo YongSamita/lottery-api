@@ -463,38 +463,40 @@ def get_report():
 
         # ใช้สำหรับ display tod หน้า report ต้องทำการ groupby tod
         if typeLotto == 'โต๊ด':
-            for doc in resultMapping:
-                doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
-            resultMapping = sorted(
-                resultMapping, key=lambda x: x['lottery_tod'])
+            if len(resultMapping) > 0:
+                for doc in resultMapping:
+                    doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
+                resultMapping = sorted(
+                    resultMapping, key=lambda x: x['lottery_tod'])
 
-            groups = groupby(resultMapping,
-                             key=lambda x: x['lottery_tod'])
-            grouped_data = []
-            for key, group in groups:
-                group_sum = sum(item['sum'] for item in group)
-                over_record = group_sum - resultLimit[0]['threeTod']
-                if over_record < 0:
-                    over_record = 0
-                if overLottery == 'true':
-                    if over_record != 0:
+                groups = groupby(resultMapping,
+                                 key=lambda x: x['lottery_tod'])
+                grouped_data = []
+                for key, group in groups:
+                    group_sum = sum(item['sum'] for item in group)
+                    over_record = group_sum - resultLimit[0]['threeTod']
+                    if over_record < 0:
+                        over_record = 0
+                    if overLottery == 'true':
+                        if over_record != 0:
+                            grouped_data.append({
+                                "id": key,
+                                "lottery": key,
+                                "sum": group_sum,
+                                "over": over_record
+                            })
+                    else:
                         grouped_data.append({
                             "id": key,
                             "lottery": key,
                             "sum": group_sum,
                             "over": over_record
                         })
-                else:
-                    grouped_data.append({
-                        "id": key,
-                        "lottery": key,
-                        "sum": group_sum,
-                        "over": over_record
-                    })
-            if sortByLottery == 'false':
-                grouped_data = sorted(
-                    grouped_data, key=lambda x: x['sum'], reverse=True)
-            resultMapping = grouped_data
+                if sortByLottery == 'false':
+                    grouped_data = sorted(
+                        grouped_data, key=lambda x: x['sum'], reverse=True)
+                resultMapping = grouped_data
+
         if typeLotto == 'โต๊ด':
             for lottery in resultMapping:
                 over_sum += lottery["over"]
