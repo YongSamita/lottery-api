@@ -187,8 +187,8 @@ def handleMappingResponseDataOver(count, typeLotto, overLottery, resultLottery, 
                     else:
                         document['over'] = over
                 elif (typeLotto == 'โต๊ด'):
-                    over = document['tod'] - resultLimit[0]['threeTod']
                     document['sum'] = document['tod']
+                    over = document['tod'] - resultLimit[0]['threeTod']
                     if (over <= 0):
                         document['over'] = 0
                     else:
@@ -231,8 +231,11 @@ def handleMappingResponseDataOver(count, typeLotto, overLottery, resultLottery, 
             del document['tod']
             del document['_id']
             resultSum.append(document)
-            if (document['over'] == 0):
-                if (overLottery == 'false'):
+            if (typeLotto != 'โต๊ด'):
+                if (document['over'] == 0):
+                    if (overLottery == 'false'):
+                        result.append(document)
+                else:
                     result.append(document)
             else:
                 result.append(document)
@@ -269,8 +272,11 @@ def handleMappingResponseDataOver(count, typeLotto, overLottery, resultLottery, 
             del document['top']
             del document['tod']
             del document['_id']
-            if (document['over'] == 0):
-                if (overLottery == 'false'):
+            if (typeLotto != 'โต๊ด'):
+                if (document['over'] == 0):
+                    if (overLottery == 'false'):
+                        result.append(document)
+                else:
                     result.append(document)
             else:
                 result.append(document)

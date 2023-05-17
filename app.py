@@ -440,6 +440,7 @@ def get_report():
         yod_lup = 0
         yod_lup35 = 0
         over_sum = 0
+        over_record = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
@@ -466,26 +467,43 @@ def get_report():
                 doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
             resultMapping = sorted(
                 resultMapping, key=lambda x: x['lottery_tod'])
+
             groups = groupby(resultMapping,
                              key=lambda x: x['lottery_tod'])
             grouped_data = []
             for key, group in groups:
                 group_sum = sum(item['sum'] for item in group)
-                group_over = sum(item['over'] for item in group)
-                grouped_data.append({
-                    "id": key,
-                    "lottery": key,
-                    "sum": group_sum,
-                    "over": group_over
-                })
+                over_record = group_sum - resultLimit[0]['threeTod']
+                if over_record < 0:
+                    over_record = 0
+                if overLottery == 'true':
+                    if over_record != 0:
+                        grouped_data.append({
+                            "id": key,
+                            "lottery": key,
+                            "sum": group_sum,
+                            "over": over_record
+                        })
+                else:
+                    grouped_data.append({
+                        "id": key,
+                        "lottery": key,
+                        "sum": group_sum,
+                        "over": over_record
+                    })
             if sortByLottery == 'false':
                 grouped_data = sorted(
                     grouped_data, key=lambda x: x['sum'], reverse=True)
             resultMapping = grouped_data
-
-        for lottery in resultSum:
-            sum_sum += lottery["sum"]
-            over_sum += lottery["over"]
+        if typeLotto == 'โต๊ด':
+            for lottery in resultMapping:
+                over_sum += lottery["over"]
+            for lottery in resultSum:
+                sum_sum += lottery["sum"]
+        else:
+            for lottery in resultSum:
+                sum_sum += lottery["sum"]
+                over_sum += lottery["over"]
         yod_lup = sum_sum - over_sum
         yod_lup35 = yod_lup - (yod_lup * 35/100)
         resp = jsonify({"data": {'resultTable': resultMapping, 'summarize': {
