@@ -108,18 +108,41 @@ def get_lottery():
 def get_lottery_all():
     try:
         req = request.args.get('lottery')
+        print("get-lottery-all req: ",req)
         current_date = datetime.utcnow() + timedelta(hours=13)
         current_start_of_day = datetime.combine(current_date, time.max)
         past_date = current_date - timedelta(days=10)
         past_start_of_day = datetime.combine(past_date, time.min)
+
         projection = {'buttom': 1,
-                      'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
-        result = list(lotteryDB.find({
-            "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}, "lottery": req}, projection).sort(
-            'createdAt', pymongo.ASCENDING))
+                      'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1, 'createdBy': 1}
+        if req != '':
+            result = list(lotteryDB.find({
+                "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}, "lottery": req}, projection).sort(
+                'createdAt', pymongo.ASCENDING))
+        else:
+            result = list(lotteryDB.find({
+                "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}}, projection).sort(
+                'createdAt', pymongo.ASCENDING))
         for document in result:
             document['id'] = str(document['_id'])
             del document['_id']
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-lottery-list', methods=['GET'])
+def get_lottery_list():
+    try:
+        current_date = datetime.utcnow() + timedelta(hours=13)
+        current_start_of_day = datetime.combine(current_date, time.max)
+        past_date = current_date - timedelta(days=10)
+        past_start_of_day = datetime.combine(past_date, time.min)
+        result = lotteryDB.distinct("lottery", {
+            "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}})
         resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
