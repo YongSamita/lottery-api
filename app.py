@@ -108,7 +108,7 @@ def get_lottery():
 def get_lottery_all():
     try:
         req = request.args.get('lottery')
-        print("get-lottery-all req: ",req)
+        print("get-lottery-all req: ", req)
         current_date = datetime.utcnow() + timedelta(hours=13)
         current_start_of_day = datetime.combine(current_date, time.max)
         past_date = current_date - timedelta(days=10)
@@ -137,13 +137,19 @@ def get_lottery_all():
 @app.route('/api/get-lottery-list', methods=['GET'])
 def get_lottery_list():
     try:
+        list_lottery = []
         current_date = datetime.utcnow() + timedelta(hours=13)
         current_start_of_day = datetime.combine(current_date, time.max)
         past_date = current_date - timedelta(days=10)
         past_start_of_day = datetime.combine(past_date, time.min)
         result = lotteryDB.distinct("lottery", {
             "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}})
-        resp = jsonify({"data": result, "status": 200})
+        for doc in result:
+            ob_lottery = {
+                "lottery": doc
+            }
+            list_lottery.append(ob_lottery)
+        resp = jsonify({"data": list_lottery, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
