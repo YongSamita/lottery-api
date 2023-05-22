@@ -748,6 +748,7 @@ def download_result():
         lottery = pd.DataFrame(lottery)
 
         mergeLot = pd.merge(lottery, customer, on='customerName', how='left')
+
         mergeLot['WinthreetopP'] = mergeLot['top']*mergeLot['threeTopPrice']
         mergeLot['WinthreetodP'] = mergeLot['tod']*mergeLot['threeTodPrice']
         mergeLot['WinthreebuttomP'] = mergeLot['buttom'] * \
@@ -767,7 +768,7 @@ def download_result():
         winoneTwoButtom2 = resultTwoButtom[1]
         winButtomone = mergeLot[mergeLot['lottery'].isin(
             [str(winoneTwoButtom1), str(winoneTwoButtom2)]) & (mergeLot['buttom'] != 0)]
-        resultTwoButtom = winButtomone.replace(
+        winButtomone = winButtomone.replace(
             {'type': {'วิ่ง': 'วิ่งล่าง'}})
         groupBywinButtomone = winButtomone.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinonebuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinonebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
@@ -781,7 +782,7 @@ def download_result():
         winoneTop3 = resultThreeTop[2]
         winoneTop = mergeLot[mergeLot['lottery'].isin(
             [str(winoneTop1), str(winoneTop2), str(winoneTop3)]) & (mergeLot['top'] != 0)]
-        resultOneTop = winoneTop.replace(
+        winoneTop = winoneTop.replace(
             {'type': {'วิ่ง': 'วิ่งบน'}})
         groupBywinTopone = winoneTop.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinonetopP']].apply(
             lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinonetopP': 'ราคาจ่าย'})).reset_index(drop=True)
@@ -844,6 +845,8 @@ def download_result():
         if len(concatenated) > 0:
             groupbycustomerName = concatenated.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[
                 ['customerName', '_id_x', 'lottery', 'type', 'ราคาซื้อ', 'ราคาจ่าย']].apply(lambda group: group.rename(columns={'type': 'หมายเหตุ'})).reset_index(drop=True)
+            groupbycustomerName = groupbycustomerName.sort_values(
+                by='หมายเหตุ')
 
             sum_buy = concatenated.groupby(['customerName'])['ราคาจ่าย'].sum()
             sum_buy = sum_buy.reset_index()
