@@ -181,8 +181,6 @@ def delete_lottery_by_date():
             {"createdAt": {"$gte": start_date, "$lt": end_date}})
         result_lottery_DB.delete_many(
             {"createdAt": {"$gte": start_date, "$lt": end_date}})
-        limitDB.delete_many(
-            {"createdAt": {"$gte": start_date, "$lt": end_date}})
         resp = jsonify(
             {"data": 'delete lottery by date success', "status": 200})
     except Exception as e:
