@@ -978,6 +978,7 @@ def download_result():
 def create_recheck_lottery():
     try:
         req = request.get_json()
+        list_lottery = []
         print('/api/create-recheck-lottery req:', req)
         start_date = datetime.strptime(
             req['dateLottery'], '%a, %d %b %Y %H:%M:%S %Z')
@@ -993,8 +994,9 @@ def create_recheck_lottery():
         data['id'] = str(data['_id'])
         del data['createdAt']
         del data['_id']
+        list_lottery.append(data)
         resp = jsonify(
-            {"data": data, "status": 200})
+            {"data": list_lottery, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
