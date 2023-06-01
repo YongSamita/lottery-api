@@ -1,5 +1,5 @@
 from flask import Flask, make_response, request, jsonify
-from itertools import permutations
+from itertools import groupby, permutations
 from pymongo import MongoClient
 import pymongo
 from util.lottery import handleCreateCupleTod, handleCreateLoyPae, handleCreateNineteen, handleCreateThreeSixSwitch, handleCreateYums
@@ -108,25 +108,48 @@ def get_lottery():
 def get_lottery_all():
     try:
         req = request.args.get('lottery')
+        print("get-lottery-all req: ", req)
         current_date = datetime.utcnow() + timedelta(hours=13)
         current_start_of_day = datetime.combine(current_date, time.max)
         past_date = current_date - timedelta(days=10)
         past_start_of_day = datetime.combine(past_date, time.min)
+
         projection = {'buttom': 1,
-                      'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
-        if req == 'undefined':
-            result = list(lotteryDB.find({
-                "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}}, projection).sort(
-                'createdAt', pymongo.ASCENDING))
-        else:
+                      'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1, 'createdBy': 1}
+        if req != 'undefined':
             result = list(lotteryDB.find({
                 "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}, "lottery": req}, projection).sort(
                 'createdAt', pymongo.ASCENDING))
-
+        else:
+            result = list(lotteryDB.find({
+                "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}}, projection).sort(
+                'createdAt', pymongo.ASCENDING))
         for document in result:
             document['id'] = str(document['_id'])
             del document['_id']
         resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-lottery-list', methods=['GET'])
+def get_lottery_list():
+    try:
+        list_lottery = []
+        current_date = datetime.utcnow() + timedelta(hours=13)
+        current_start_of_day = datetime.combine(current_date, time.max)
+        past_date = current_date - timedelta(days=10)
+        past_start_of_day = datetime.combine(past_date, time.min)
+        result = lotteryDB.distinct("lottery", {
+            "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}})
+        for doc in result:
+            ob_lottery = {
+                "lottery": doc
+            }
+            list_lottery.append(ob_lottery)
+        resp = jsonify({"data": list_lottery, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
@@ -157,8 +180,6 @@ def delete_lottery_by_date():
         lotteryDB.delete_many(
             {"createdAt": {"$gte": start_date, "$lt": end_date}})
         result_lottery_DB.delete_many(
-            {"createdAt": {"$gte": start_date, "$lt": end_date}})
-        limitDB.delete_many(
             {"createdAt": {"$gte": start_date, "$lt": end_date}})
         resp = jsonify(
             {"data": 'delete lottery by date success', "status": 200})
@@ -446,6 +467,7 @@ def get_report():
         yod_lup = 0
         yod_lup35 = 0
         over_sum = 0
+        over_record = 0
         count = request.args.get('count')
         typeLotto = request.args.get('type')
         sortByLottery = request.args.get('sortByLottery')
@@ -465,10 +487,74 @@ def get_report():
                 'createdAt', pymongo.DESCENDING))
         resultMapping, resultSum = handleMappingResponseDataOver(
             count, typeLotto, overLottery, resultLottery, resultLimit)
-        limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
-        for lottery in resultSum:
-            sum_sum += lottery["sum"]
-            over_sum += lottery["over"]
+
+        # ใช้สำหรับ display tod หน้า report ต้องทำการ groupby tod
+        if typeLotto == 'โต๊ด':
+            for doc in resultMapping:
+                doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
+            resultMapping = sorted(
+                resultMapping, key=lambda x: x['lottery_tod'])
+
+            groups = groupby(resultMapping,
+                             key=lambda x: x['lottery_tod'])
+            grouped_data = []
+            if (len(resultLimit) > 0):
+                for key, group in groups:
+                    group_sum = sum(item['sum'] for item in group)
+                    over_record = group_sum - resultLimit[0]['threeTod']
+                    if over_record < 0:
+                        over_record = 0
+                    if overLottery == 'true':
+                        if over_record != 0:
+                            grouped_data.append({
+                                "id": key,
+                                "lottery": key,
+                                "sum": group_sum,
+                                "over": over_record
+                            })
+                    else:
+                        grouped_data.append({
+                            "id": key,
+                            "lottery": key,
+                            "sum": group_sum,
+                            "over": over_record
+                        })
+                if sortByLottery == 'false':
+                    grouped_data = sorted(
+                        grouped_data, key=lambda x: x['sum'], reverse=True)
+                resultMapping = grouped_data
+            else:
+                for key, group in groups:
+                    group_sum = sum(item['sum'] for item in group)
+                    over_record = 0
+                    if overLottery == 'true':
+                        if over_record != 0:
+                            grouped_data.append({
+                                "id": key,
+                                "lottery": key,
+                                "sum": group_sum,
+                                "over": over_record
+                            })
+                    else:
+                        grouped_data.append({
+                            "id": key,
+                            "lottery": key,
+                            "sum": group_sum,
+                            "over": over_record
+                        })
+                if sortByLottery == 'false':
+                    grouped_data = sorted(
+                        grouped_data, key=lambda x: x['sum'], reverse=True)
+                resultMapping = grouped_data
+        if typeLotto == 'โต๊ด':
+            for lottery in resultMapping:
+                over_sum += lottery["over"]
+            for lottery in resultSum:
+                sum_sum += lottery["sum"]
+        else:
+            for lottery in resultSum:
+                sum_sum += lottery["sum"]
+                over_sum += lottery["over"]
         yod_lup = sum_sum - over_sum
         yod_lup35 = yod_lup - (yod_lup * 35/100)
         resp = jsonify({"data": {'resultTable': resultMapping, 'summarize': {
@@ -515,9 +601,60 @@ def download_report():
         resultMapping, resultSum = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
-        for lottery in resultSum:
-            sum_sum += lottery["sum"]
-            over_sum += lottery["over"]
+
+        # ใช้สำหรับ display tod หน้า report ต้องทำการ groupby tod
+        if typeLotto == 'โต๊ด':
+            for doc in resultMapping:
+                doc['lottery_tod'] = ''.join(sorted(doc['lottery']))
+            resultMapping = sorted(
+                resultMapping, key=lambda x: x['lottery_tod'])
+
+            groups = groupby(resultMapping,
+                             key=lambda x: x['lottery_tod'])
+            grouped_data = []
+            if (limitReport != 0):
+                for key, group in groups:
+                    group_sum = sum(item['sum'] for item in group)
+                    over_record = group_sum - limitReport
+                    if over_record < 0:
+                        over_record = 0
+                    if over_record != 0:
+                        grouped_data.append({
+                            "id": key,
+                            "lottery": key,
+                            "sum": group_sum,
+                            "over": over_record
+                        })
+                if sortByLottery == 'false':
+                    grouped_data = sorted(
+                        grouped_data, key=lambda x: x['sum'], reverse=True)
+                resultMapping = grouped_data
+
+            else:
+                for key, group in groups:
+                    group_sum = sum(item['sum'] for item in group)
+                    over_record = 0
+                    if over_record != 0:
+                        grouped_data.append({
+                            "id": key,
+                            "lottery": key,
+                            "sum": group_sum,
+                            "over": over_record
+                        })
+                if sortByLottery == 'false':
+                    grouped_data = sorted(
+                        grouped_data, key=lambda x: x['sum'], reverse=True)
+                resultMapping = grouped_data
+        if typeLotto == 'โต๊ด':
+            for lottery in resultMapping:
+                over_sum += lottery["over"]
+            for lottery in resultSum:
+                sum_sum += lottery["sum"]
+        else:
+            for lottery in resultSum:
+                sum_sum += lottery["sum"]
+                over_sum += lottery["over"]
+
         yod_lup = sum_sum - over_sum
         yod_lup35 = (yod_lup - (yod_lup*35/100))
         thai_months = [
@@ -609,6 +746,7 @@ def download_result():
         lottery = pd.DataFrame(lottery)
 
         mergeLot = pd.merge(lottery, customer, on='customerName', how='left')
+
         mergeLot['WinthreetopP'] = mergeLot['top']*mergeLot['threeTopPrice']
         mergeLot['WinthreetodP'] = mergeLot['tod']*mergeLot['threeTodPrice']
         mergeLot['WinthreebuttomP'] = mergeLot['buttom'] * \
@@ -626,10 +764,10 @@ def download_result():
         resultTwoButtom = resultTwoButtom[0] + resultTwoButtom[1]
         winoneTwoButtom1 = resultTwoButtom[0]
         winoneTwoButtom2 = resultTwoButtom[1]
-        resultTwoButtom = winoneTwoButtom1.replace(
-            {'type': {'วิ่ง': 'วิ่งล่าง'}})
         winButtomone = mergeLot[mergeLot['lottery'].isin(
             [str(winoneTwoButtom1), str(winoneTwoButtom2)]) & (mergeLot['buttom'] != 0)]
+        winButtomone = winButtomone.replace(
+            {'type': {'วิ่ง': 'วิ่งล่าง'}})
         groupBywinButtomone = winButtomone.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'buttom', 'WinonebuttomP']].apply(
             lambda group: group.rename(columns={'buttom': 'ราคาซื้อ', 'WinonebuttomP': 'ราคาจ่าย'})).reset_index(drop=True)
 
@@ -642,7 +780,8 @@ def download_result():
         winoneTop3 = resultThreeTop[2]
         winoneTop = mergeLot[mergeLot['lottery'].isin(
             [str(winoneTop1), str(winoneTop2), str(winoneTop3)]) & (mergeLot['top'] != 0)]
-
+        winoneTop = winoneTop.replace(
+            {'type': {'วิ่ง': 'วิ่งบน'}})
         groupBywinTopone = winoneTop.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'top', 'WinonetopP']].apply(
             lambda group: group.rename(columns={'top': 'ราคาซื้อ', 'WinonetopP': 'ราคาจ่าย'})).reset_index(drop=True)
 
@@ -704,6 +843,8 @@ def download_result():
         if len(concatenated) > 0:
             groupbycustomerName = concatenated.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[
                 ['customerName', '_id_x', 'lottery', 'type', 'ราคาซื้อ', 'ราคาจ่าย']].apply(lambda group: group.rename(columns={'type': 'หมายเหตุ'})).reset_index(drop=True)
+            groupbycustomerName = groupbycustomerName.sort_values(
+                by='หมายเหตุ')
 
             sum_buy = concatenated.groupby(['customerName'])['ราคาจ่าย'].sum()
             sum_buy = sum_buy.reset_index()
