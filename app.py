@@ -756,10 +756,10 @@ def download_result():
             mergeLot['threeButtomPrice']
         mergeLot['WintwotopP'] = mergeLot['top']*mergeLot['twoTopPrice']
         mergeLot['WintwobuttomP'] = mergeLot['buttom'] * \
-            mergeLot['twobuttomPrice']
+            mergeLot['twoButtomPrice']
         mergeLot['WinonetopP'] = mergeLot['top']*mergeLot['oneTopPrice']
         mergeLot['WinonebuttomP'] = mergeLot['buttom'] * \
-            mergeLot['onebuttomPrice']
+            mergeLot['oneButtomPrice']
         mergeLot['WincoupletodP'] = mergeLot['tod']*mergeLot['coupleTodPrice']
         mergeLot['WinloypaeP'] = mergeLot['tod']*mergeLot['loypaePrice']
         mergeLot['WinyumP'] = mergeLot['top']*mergeLot['yumPrice']
