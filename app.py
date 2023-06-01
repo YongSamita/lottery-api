@@ -1,3 +1,4 @@
+import math
 from flask import Flask, make_response, request, jsonify
 from itertools import groupby, permutations
 from pymongo import MongoClient
@@ -973,7 +974,7 @@ def download_result():
 def create_recheck_lottery():
     try:
         req = request.get_json()
-        print('/api/recheck-lottery req:', req)
+        print('/api/create-recheck-lottery req:', req)
         start_date = datetime.strptime(
             req['dateLottery'], '%a, %d %b %Y %H:%M:%S %Z')
         data = {
@@ -998,7 +999,7 @@ def get_recheck_lottery():
         customerName = request.args.get('customerName')
         dateLottery = request.args.get('dateLottery')
         page = request.args.get('page')
-        print('get-report req:', customerName, dateLottery,
+        print('get-recheck-lottery req:', customerName, dateLottery,
               page)
         start_date = datetime.strptime(
             dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
@@ -1024,22 +1025,57 @@ def get_recheck_lottery_summary():
     try:
         customerName = request.args.get('customerName')
         dateLottery = request.args.get('dateLottery')
-        page = request.args.get('page')
-        print('get-report req:', customerName, dateLottery,
-              page)
+        print('get-recheck-lottery-summary req:', customerName, dateLottery)
         start_date = datetime.strptime(
             dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
         end_date = start_date.replace(hour=23, minute=59, second=59)
-        if page != '' and page != 'undefined':
-            result = list(recheck_lottery.find({
-                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName, "page": page}))
+        result = list(recheck_lottery.find({
+            "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName}))
+        if len(result) > 0:
+            result = pd.DataFrame(result)
+            result_pivot = pd.pivot_table(result, values='price', index=['page'],
+                                          columns=['type'], aggfunc=np.sum)
+            result = result_pivot.reset_index()
+            dic_result = result.to_dict('records')
         else:
-            result = list(recheck_lottery.find({
-                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName}))
+            dic_result = []
+        for document in dic_result:
+            if 'วิ่ง' not in document or math.isnan(document['วิ่ง']):
+                document['วิ่ง'] = 0
+            if '2 ตัว' not in document or math.isnan(document['2 ตัว']):
+                document['2 ตัว'] = 0
+            if '3 ตัว' not in document or math.isnan(document['3 ตัว']):
+                document['3 ตัว'] = 0
+            if 'ลอยแพ' not in document or math.isnan(document['ลอยแพ']):
+                document['ลอยแพ'] = 0
+            if 'คู่โต๊ด' not in document or math.isnan(document['คู่โต๊ด']):
+                document['คู่โต๊ด'] = 0
+            document['id'] = document['page']
+        resp = jsonify({"data": dic_result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-page-recheck-lottery', methods=['GET'])
+def get_page_recheck_lottery():
+    try:
+        list_page = []
+        customerName = request.args.get('customerName')
+        dateLottery = request.args.get('dateLottery')
+        print('get-page-recheck-lottery req:', customerName, dateLottery)
+        start_date = datetime.strptime(
+            dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_date = start_date.replace(hour=23, minute=59, second=59)
+        result = recheck_lottery.distinct("page", {
+            "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName})
         for document in result:
-            document['id'] = str(document['_id'])
-            del document['_id']
-        resp = jsonify({"data": result, "status": 200})
+            ob_page = {
+                "page": document
+            }
+            list_page.append(ob_page)
+        resp = jsonify({"data": list_page, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
