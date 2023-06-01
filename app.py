@@ -989,8 +989,11 @@ def create_recheck_lottery():
             "price": req['price'],
         }
         recheck_lottery.insert_one(data)
+        data['_id'] = str(data['_id'])
+        data['id'] = str(data['_id'])
+        del data['createdAt']
         resp = jsonify(
-            {"data": 'create recheck-lottery success', "status": 200})
+            {"data": data, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
