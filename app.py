@@ -1033,6 +1033,12 @@ def get_recheck_lottery():
 @app.route('/api/get-recheck-lottery-summary', methods=['GET'])
 def get_recheck_lottery_summary():
     try:
+        threePriceSum = 0
+        twoPriceSum = 0
+        onePriceSum = 0
+        loypaePriceSum = 0
+        cupletodPriceSum = 0
+        sumLottery = 0
         customerName = request.args.get('customerName')
         dateLottery = request.args.get('dateLottery')
         print('get-recheck-lottery-summary req:', customerName, dateLottery)
@@ -1060,8 +1066,20 @@ def get_recheck_lottery_summary():
                 document['ลอยแพ'] = 0
             if 'คู่โต๊ด' not in document or math.isnan(document['คู่โต๊ด']):
                 document['คู่โต๊ด'] = 0
+            threePriceSum += document['3 ตัว']
+            twoPriceSum += document['2 ตัว']
+            onePriceSum += document['วิ่ง']
+            loypaePriceSum += document['วิ่ง']
+            cupletodPriceSum += document['วิ่ง']
+            document['sum'] = document['วิ่ง'] + document['2 ตัว'] + \
+                document['3 ตัว'] + document['ลอยแพ'] + document['คู่โต๊ด']
             document['id'] = document['page']
-        resp = jsonify({"data": dic_result, "status": 200})
+        sumLottery = threePriceSum + twoPriceSum + \
+            onePriceSum+loypaePriceSum+cupletodPriceSum
+
+        resp = jsonify({"data": {"dataTable": dic_result,
+                       "threePriceSum": threePriceSum, "twoPriceSum": twoPriceSum, "onePriceSum": onePriceSum, "loypaePriceSum": loypaePriceSum,
+                                 "cupletodPriceSum": cupletodPriceSum,"sumLottery":sumLottery}, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
