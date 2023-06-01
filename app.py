@@ -1092,5 +1092,35 @@ def get_page_recheck_lottery():
     return resp
 
 
+@app.route('/api/delete-recheck-lottery', methods=['POST'])
+def delete_recheck_lottery():
+    try:
+        req = request.get_json()
+        print('/api/elete-recheck-lottery req:', req)
+        for item in req['id']:
+            recheck_lottery.delete_one({'_id': ObjectId(item)})
+        resp = jsonify({"data": 'delete success', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/edit-recheck-lottery', methods=['POST'])
+def edit_recheck_lottery():
+    try:
+        req = request.get_json()
+        print('/api/edit-recheck-lottery req:', req)
+        filter = {'_id': ObjectId(req['id'])}
+        newvalues = {
+            "$set": {'type': req['type'], 'price': req['price'], 'page': req['page']}}
+        recheck_lottery.update_one(filter, newvalues)
+        resp = jsonify({"data": req, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
 if __name__ == '__main__':
     app.run(debug=True)
