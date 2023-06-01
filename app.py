@@ -114,9 +114,15 @@ def get_lottery_all():
         past_start_of_day = datetime.combine(past_date, time.min)
         projection = {'buttom': 1,
                       'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1}
-        result = list(lotteryDB.find({
-            "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}, "lottery": req}, projection).sort(
-            'createdAt', pymongo.ASCENDING))
+        if req == 'undefined':
+            result = list(lotteryDB.find({
+                "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}}, projection).sort(
+                'createdAt', pymongo.ASCENDING))
+        else:
+            result = list(lotteryDB.find({
+                "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}, "lottery": req}, projection).sort(
+                'createdAt', pymongo.ASCENDING))
+
         for document in result:
             document['id'] = str(document['_id'])
             del document['_id']
