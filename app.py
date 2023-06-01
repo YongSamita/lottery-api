@@ -116,7 +116,7 @@ def get_lottery_all():
 
         projection = {'buttom': 1,
                       'customerName': 1, 'lottery': 1, 'tod': 1, 'top': 1, 'type': 1, 'createdBy': 1}
-        if req != 'undefined':
+        if req != 'undefined' and req != '':
             result = list(lotteryDB.find({
                 "createdAt": {"$gte": past_start_of_day, "$lt": current_start_of_day}, "lottery": req}, projection).sort(
                 'createdAt', pymongo.ASCENDING))
