@@ -24,6 +24,7 @@ lotteryDB = db['lottery']
 customerDB = db['customer']
 limitDB = db['limit']
 result_lottery_DB = db['result_lottery']
+recheck_lottery = db['recheck_lottery']
 tz = pytz.timezone('Asia/Bangkok')
 
 
@@ -962,6 +963,83 @@ def download_result():
         resp.headers['Content-Type'] = 'application/pdf'
         resp.headers['Content-Disposition'] = 'attachment; filename=report.pdf'
 
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/create-recheck-lottery', methods=['POST'])
+def create_recheck_lottery():
+    try:
+        req = request.get_json()
+        print('/api/recheck-lottery req:', req)
+        start_date = datetime.strptime(
+            req['dateLottery'], '%a, %d %b %Y %H:%M:%S %Z')
+        data = {
+            "customerName": req['customerName'],
+            "createdAt": start_date,
+            "page": req['page'],
+            "type": req['type'],
+            "price": req['price'],
+        }
+        recheck_lottery.insert_one(data)
+        resp = jsonify(
+            {"data": 'create recheck-lottery success', "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-recheck-lottery', methods=['GET'])
+def get_recheck_lottery():
+    try:
+        customerName = request.args.get('customerName')
+        dateLottery = request.args.get('dateLottery')
+        page = request.args.get('page')
+        print('get-report req:', customerName, dateLottery,
+              page)
+        start_date = datetime.strptime(
+            dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_date = start_date.replace(hour=23, minute=59, second=59)
+        if page != '' and page != 'undefined':
+            result = list(recheck_lottery.find({
+                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName, "page": page}))
+        else:
+            result = list(recheck_lottery.find({
+                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName}))
+        for document in result:
+            document['id'] = str(document['_id'])
+            del document['_id']
+        resp = jsonify({"data": result, "status": 200})
+    except Exception as e:
+        print("The error is: ", e)
+        resp = jsonify({"data": '', "status": 400})
+    return resp
+
+
+@app.route('/api/get-recheck-lottery-summary', methods=['GET'])
+def get_recheck_lottery_summary():
+    try:
+        customerName = request.args.get('customerName')
+        dateLottery = request.args.get('dateLottery')
+        page = request.args.get('page')
+        print('get-report req:', customerName, dateLottery,
+              page)
+        start_date = datetime.strptime(
+            dateLottery, '%a, %d %b %Y %H:%M:%S %Z')
+        end_date = start_date.replace(hour=23, minute=59, second=59)
+        if page != '' and page != 'undefined':
+            result = list(recheck_lottery.find({
+                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName, "page": page}))
+        else:
+            result = list(recheck_lottery.find({
+                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName}))
+        for document in result:
+            document['id'] = str(document['_id'])
+            del document['_id']
+        resp = jsonify({"data": result, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
