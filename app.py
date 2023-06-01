@@ -1069,8 +1069,8 @@ def get_recheck_lottery_summary():
             threePriceSum += document['3 ตัว']
             twoPriceSum += document['2 ตัว']
             onePriceSum += document['วิ่ง']
-            loypaePriceSum += document['วิ่ง']
-            cupletodPriceSum += document['วิ่ง']
+            loypaePriceSum += document['ลอยแพ']
+            cupletodPriceSum += document['คู่โต๊ด']
             document['sum'] = document['วิ่ง'] + document['2 ตัว'] + \
                 document['3 ตัว'] + document['ลอยแพ'] + document['คู่โต๊ด']
             document['id'] = document['page']
@@ -1079,7 +1079,7 @@ def get_recheck_lottery_summary():
 
         resp = jsonify({"data": {"dataTable": dic_result,
                        "threePriceSum": threePriceSum, "twoPriceSum": twoPriceSum, "onePriceSum": onePriceSum, "loypaePriceSum": loypaePriceSum,
-                                 "cupletodPriceSum": cupletodPriceSum,"sumLottery":sumLottery}, "status": 200})
+                                 "cupletodPriceSum": cupletodPriceSum, "sumLottery": sumLottery}, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
