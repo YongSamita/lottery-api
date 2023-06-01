@@ -1008,7 +1008,8 @@ def get_recheck_lottery():
     try:
         customerName = request.args.get('customerName')
         dateLottery = request.args.get('dateLottery')
-        page = int(request.args.get('page'))
+        page = request.args.get('page')
+
         print('get-recheck-lottery req:', customerName, dateLottery,
               page)
         start_date = datetime.strptime(
@@ -1016,7 +1017,7 @@ def get_recheck_lottery():
         end_date = start_date.replace(hour=23, minute=59, second=59)
         if page != '' and page != 'undefined':
             result = list(recheck_lottery.find({
-                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName, "page": page}))
+                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName, "page": int(page)}))
         else:
             result = list(recheck_lottery.find({
                 "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName}))
