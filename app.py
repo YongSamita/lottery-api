@@ -992,6 +992,7 @@ def create_recheck_lottery():
         data['_id'] = str(data['_id'])
         data['id'] = str(data['_id'])
         del data['createdAt']
+        del data['_id']
         resp = jsonify(
             {"data": data, "status": 200})
     except Exception as e:
