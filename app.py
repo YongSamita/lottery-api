@@ -1008,7 +1008,7 @@ def get_recheck_lottery():
     try:
         customerName = request.args.get('customerName')
         dateLottery = request.args.get('dateLottery')
-        page = request.args.get('page')
+        page = int(request.args.get('page'))
         print('get-recheck-lottery req:', customerName, dateLottery,
               page)
         start_date = datetime.strptime(
