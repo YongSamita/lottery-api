@@ -1016,7 +1016,7 @@ def get_recheck_lottery():
         end_date = start_date.replace(hour=23, minute=59, second=59)
         if page != '' and page != 'undefined':
             result = list(recheck_lottery.find({
-                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName, "page": page}))
+                "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName, "page": float(page)}))
         else:
             result = list(recheck_lottery.find({
                 "createdAt": {"$gte": start_date, "$lt": end_date}, "customerName": customerName}))
@@ -1079,7 +1079,7 @@ def get_recheck_lottery_summary():
 
         resp = jsonify({"data": {"dataTable": dic_result,
                        "threePriceSum": threePriceSum, "twoPriceSum": twoPriceSum, "onePriceSum": onePriceSum, "loypaePriceSum": loypaePriceSum,
-                                 "cupletodPriceSum": cupletodPriceSum,"sumLottery":sumLottery}, "status": 200})
+                                 "cupletodPriceSum": cupletodPriceSum, "sumLottery": sumLottery}, "status": 200})
     except Exception as e:
         print("The error is: ", e)
         resp = jsonify({"data": '', "status": 400})
