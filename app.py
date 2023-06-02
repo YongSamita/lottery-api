@@ -1009,6 +1009,7 @@ def get_recheck_lottery():
         customerName = request.args.get('customerName')
         dateLottery = request.args.get('dateLottery')
         page = request.args.get('page')
+
         print('get-recheck-lottery req:', customerName, dateLottery,
               page)
         start_date = datetime.strptime(
@@ -1069,8 +1070,8 @@ def get_recheck_lottery_summary():
             threePriceSum += document['3 ตัว']
             twoPriceSum += document['2 ตัว']
             onePriceSum += document['วิ่ง']
-            loypaePriceSum += document['วิ่ง']
-            cupletodPriceSum += document['วิ่ง']
+            loypaePriceSum += document['ลอยแพ']
+            cupletodPriceSum += document['คู่โต๊ด']
             document['sum'] = document['วิ่ง'] + document['2 ตัว'] + \
                 document['3 ตัว'] + document['ลอยแพ'] + document['คู่โต๊ด']
             document['id'] = document['page']
