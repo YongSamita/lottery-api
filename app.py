@@ -798,7 +798,7 @@ def download_result():
         winThreeTod = winThreeTod.replace({'type': {'3 ตัว': '3 ตัวโต๊ด'}})
         winloypae = winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ']
         wincoupletod = winThreeTod.loc[winThreeTod['type'] == 'คู่โต๊ด']
-        wincoupletod['tod'] = wincoupletod['tod'] * 10
+        wincoupletod.loc[:, 'tod'] = wincoupletod['tod'] * 10
         winThreeTod = winThreeTod.loc[winThreeTod['type'] == '3 ตัวโต๊ด']
 
         groupByWinThreeTod = winThreeTod.groupby(['customerName', 'lottery', '_id_x'], as_index=False)[['customerName', 'lottery', '_id_x', 'type', 'tod', 'WinthreetodP']].apply(
