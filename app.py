@@ -799,7 +799,7 @@ def download_result():
         winloypae = winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ']
         wincoupletod = winThreeTod.loc[winThreeTod['type'] == 'คู่โต๊ด']
         print("801", wincoupletod)
-        wincoupletod['tod'] = wincoupletod['tod'] * 10
+        wincoupletod[:, 'tod'] = wincoupletod['tod'] * 10
         winThreeTod = winThreeTod.loc[winThreeTod['type'] == '3 ตัวโต๊ด']
         print("803", wincoupletod['tod'])
         print("804", winThreeTod)
