@@ -761,7 +761,7 @@ def download_result():
         mergeLot['WinonebuttomP'] = mergeLot['buttom'] * \
             mergeLot['oneButtomPrice']
         mergeLot['WincoupletodP'] = mergeLot['tod']*mergeLot['coupleTodPrice']
-        mergeLot['WinloypaeP'] = mergeLot['tod']*mergeLot['loypaePrice']
+        mergeLot['WinloypaeP'] = mergeLot['tod']*mergeLot['loypaePrice']*10
         mergeLot['WinyumP'] = mergeLot['top']*mergeLot['yumPrice']
 
         resultTwoButtom = resultLottery.twoButtom[0]
