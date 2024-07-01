@@ -591,12 +591,17 @@ def download_report():
         pipeline = handleGetPipelineReport(
             count, typeLotto, sortByLottery, start_date, end_date)
         resultLottery = list(lotteryDB.aggregate(pipeline))
-        resultLimit = list(limitDB.find(
-            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
-        if len(resultLimit) == 0:
-            resultLimit = list(limitDB.find({}).sort(
+
+        # commend นีไว้สำหรับเปลี่ยน logic การตั้งรับให้ไปใช้ record ล่าสุดตลอดใน DB
+
+        # resultLimit = list(limitDB.find(
+        #     {"createdAt": {"$gte": start_date, "$lt": end_date}}))
+        
+        # if len(resultLimit) == 0:
+  
+        resultLimit = list(limitDB.find({}).sort(
                 'createdAt', pymongo.DESCENDING))
-            data = {
+        data = {
                 "threeTop": resultLimit[0]['threeTop'],
                 "threeTod": resultLimit[0]['threeTod'],
                 "threeButtom": resultLimit[0]['threeButtom'],
@@ -604,7 +609,7 @@ def download_report():
                 "twoButtom": resultLimit[0]['twoButtom'],
                 "createdAt": datetime.utcnow() + timedelta(hours=13)
             }
-            limitDB.insert_one(data)
+        limitDB.insert_one(data)
         resultMapping, resultSum = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
