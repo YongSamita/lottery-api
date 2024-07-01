@@ -482,10 +482,15 @@ def get_report():
         pipeline = handleGetPipelineReport(
             count, typeLotto, sortByLottery, start_date, end_date)
         resultLottery = list(lotteryDB.aggregate(pipeline))
-        resultLimit = list(limitDB.find(
-            {"createdAt": {"$gte": start_date, "$lt": end_date}}))
-        if len(resultLimit) == 0:
-            resultLimit = list(limitDB.find({}).sort(
+
+        # commend นีไว้สำหรับเปลี่ยน logic การตั้งรับให้ไปใช้ record ล่าสุดตลอดใน DB
+
+        # resultLimit = list(limitDB.find(
+        #     {"createdAt": {"$gte": start_date, "$lt": end_date}}))
+        
+        # if len(resultLimit) == 0:
+
+        resultLimit = list(limitDB.find({}).sort(
                 'createdAt', pymongo.DESCENDING))
         resultMapping, resultSum = handleMappingResponseDataOver(
             count, typeLotto, overLottery, resultLottery, resultLimit)
