@@ -601,15 +601,15 @@ def download_report():
   
         resultLimit = list(limitDB.find({}).sort(
                 'createdAt', pymongo.DESCENDING))
-        data = {
-                "threeTop": resultLimit[0]['threeTop'],
-                "threeTod": resultLimit[0]['threeTod'],
-                "threeButtom": resultLimit[0]['threeButtom'],
-                "twoTop": resultLimit[0]['twoTop'],
-                "twoButtom": resultLimit[0]['twoButtom'],
-                "createdAt": datetime.utcnow() + timedelta(hours=13)
-            }
-        limitDB.insert_one(data)
+        # data = {
+        #         "threeTop": resultLimit[0]['threeTop'],
+        #         "threeTod": resultLimit[0]['threeTod'],
+        #         "threeButtom": resultLimit[0]['threeButtom'],
+        #         "twoTop": resultLimit[0]['twoTop'],
+        #         "twoButtom": resultLimit[0]['twoButtom'],
+        #         "createdAt": datetime.utcnow() + timedelta(hours=13)
+        #     }
+        # limitDB.insert_one(data)
         resultMapping, resultSum = handleMappingResponseData(
             count, typeLotto, overLottery, resultLottery, resultLimit)
         limitReport = handleGetLimitReport(count, typeLotto, resultLimit)
