@@ -771,7 +771,7 @@ def download_result():
         mergeLot['WinonebuttomP'] = mergeLot['buttom'] * \
             mergeLot['oneButtomPrice']
         mergeLot['WincoupletodP'] = mergeLot['tod']*mergeLot['coupleTodPrice']
-        mergeLot['WinloypaeP'] = mergeLot['tod']*mergeLot['loypaePrice']*10
+        mergeLot['WinloypaeP'] = (mergeLot['tod']*mergeLot['loypaePrice']*10)/2
         mergeLot['WinyumP'] = mergeLot['top']*mergeLot['yumPrice']
 
         resultTwoButtom = resultLottery.twoButtom[0]
@@ -806,7 +806,7 @@ def download_result():
         winThreeTod = mergeLot[(mergeLot['lottery'].isin(
             winThreeTod)) & (mergeLot['tod'] != 0)]
         winThreeTod = winThreeTod.replace({'type': {'3 ตัว': '3 ตัวโต๊ด'}})
-        winloypae = (winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ'])/2
+        winloypae = winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ']
         wincoupletod = winThreeTod.loc[winThreeTod['type'] == 'คู่โต๊ด']
         wincoupletod['tod'] = wincoupletod['tod'] * 10
         winThreeTod = winThreeTod.loc[winThreeTod['type'] == '3 ตัวโต๊ด']
