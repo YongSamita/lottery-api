@@ -806,7 +806,7 @@ def download_result():
         winThreeTod = mergeLot[(mergeLot['lottery'].isin(
             winThreeTod)) & (mergeLot['tod'] != 0)]
         winThreeTod = winThreeTod.replace({'type': {'3 ตัว': '3 ตัวโต๊ด'}})
-        winloypae = winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ']
+        winloypae = (winThreeTod.loc[winThreeTod['type'] == 'ลอยแพ'])/2
         wincoupletod = winThreeTod.loc[winThreeTod['type'] == 'คู่โต๊ด']
         wincoupletod['tod'] = wincoupletod['tod'] * 10
         winThreeTod = winThreeTod.loc[winThreeTod['type'] == '3 ตัวโต๊ด']
